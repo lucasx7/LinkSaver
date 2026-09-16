@@ -18,7 +18,7 @@ O produto é para quem tem dificuldades de organizar links salvos e mantê-los s
 | Criação e alteração de links em modo offline, com sincronização com o servidor quando se conectar novamente. | |
 
 ### Escolha das tecnologias
-Como o projeto adota um formato 'dois em um', optei por usar Kotlin e Ktor. Essa escolha também uniu o útil ao agradável, já que eu queria aprender Kotlin no lugar de Java.
+Decidi usar o Kotlin e Compose multiplatform para fazer o frontend e mobile, pois me permite utilizar o mesmo projeto para todas as plataformas, e também decidi usar o Kotlin com Ktor no backend para manter a mesma linguagem entre todos os projetos, reduzindo o esforço cognitivo por não precisar trocar de linguagem, e também por ser uma linguagem mais moderna e com interoperabilidade com Java.
 
 
 
