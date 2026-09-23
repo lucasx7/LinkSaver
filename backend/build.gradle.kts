@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(ktorLibs.plugins.ktor)
+    id("org.flywaydb.flyway") version "10.11.0" 
 }
 
 group = "com.lucasx7.linksaver"
@@ -23,4 +24,8 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
+
+    implementation("org.flywaydb:flyway-core")
+
+    runtimeOnly("org.postgresql:postgresql:42.7.2") 
 }
