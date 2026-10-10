@@ -3,5 +3,9 @@ ktor:
     port: 8080
   application:
     modules:
-      - com.lucasx7.linksaver.SerializationKt.configureSerialization
-      - com.lucasx7.linksaver.RoutingKt.configureRouting
+      - com.lucasx7.linksaver.MainKt.module
+db:
+  driver: "org.postgresql.Driver"
+  jdbcUrl: "jdbc:postgresql://10.7.109.211:5432/linksaver"
+  user: "postgres"
+  password: "postgres"
