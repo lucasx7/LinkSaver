@@ -6,6 +6,8 @@ ktor:
       - com.lucasx7.linksaver.MainKt.module
 db:
   driver: "org.postgresql.Driver"
-  jdbcUrl: "jdbc:postgresql://10.7.109.211:5432/linksaver"
-  user: "postgres"
-  password: "postgres"
+  host: "$DB_HOST:10.7.109.244"
+  port: "$DB_PORT:5432"
+  name: "$DB_NAME:linksaver"
+  user: "$DB_USER:postgres"
+  password: "$DB_PASSWORD"
