@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "sprint1-android-2026-10-16" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-android:
+    name: Compilação Android (Compose)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Permissão de execução no gradlew
+        run: chmod +x compose/gradlew
+
+      - name: Compilar APK Debug do Android
+        working-directory: compose
+        run: ./gradlew :androidApp:assembleDebug --stacktrace
+
+  build-backend:
+    name: Compilação Backend (Ktor)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Permissão de execução no gradlew
+        run: chmod +x backend/gradlew
+
+      - name: Compilar Backend
+        working-directory: backend
+        run: ./gradlew assemble --stacktrace
