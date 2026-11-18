@@ -1,3 +1,4 @@
+import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -7,6 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
 }
 
@@ -108,4 +110,13 @@ ktlint {
     filter {
         exclude { it.file.invariantSeparatorsPath.contains("/build/generated/") }
     }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+}
+
+tasks.withType<Detekt>().configureEach {
+    exclude { it.file.invariantSeparatorsPath.contains("/build/generated/") }
 }
