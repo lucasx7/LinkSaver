@@ -83,4 +83,14 @@ class ListaLinksViewModelTest : KoinTest {
             }
         }
     }
+
+    @Test
+    fun removerUltimoLinkEmiteVazio() = executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
+        vm.estado.test {
+            assertIs<ListaLinksUiState.Carregando>(awaitItem())
+            assertIs<ListaLinksUiState.Sucesso>(awaitItem())
+            vm.remover(1)
+            assertIs<ListaLinksUiState.Vazio>(awaitItem())
+        }
+    }
 }
