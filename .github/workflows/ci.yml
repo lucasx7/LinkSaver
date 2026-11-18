@@ -24,9 +24,16 @@ jobs:
       - name: Permissão de execução no gradlew
         run: chmod +x compose/gradlew
 
-      - name: Rodar testes compartilhados (ViewModels)
+      - name: Instalar libs graficas para Compose Desktop Test
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libfontconfig1
+
+      - name: Qualidade (ktlint e detekt)
         working-directory: compose
-        run: ./gradlew :shared:testAndroidHostTest --stacktrace
+        run: ./gradlew :shared:ktlintCheck :shared:detektCommonMainSourceSet :shared:detektCommonTestSourceSet :shared:detektDesktopTestSourceSet --stacktrace
+
+      - name: Testes compartilhados e de interface (ViewModels + Compose UI)
+        working-directory: compose
+        run: ./gradlew :shared:desktopTest :shared:testAndroidHostTest --stacktrace
 
       - name: Compilar APK Debug do Android
         working-directory: compose

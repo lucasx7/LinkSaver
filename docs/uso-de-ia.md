@@ -31,3 +31,11 @@ Durante o desenvolvimento do LinkSaver, foram utilizados múltiplos assistentes 
 A ordem de eficácia das IAs neste projeto foi claramente: **Claude > ChatGPT > Gemini**.
 
 O processo evidenciou que assistentes de IA não devem ser seguidos cegamente: modelos podem sugerir bibliotecas não instaladas ou estruturas que quebram o layout em tempo de execução. O papel do desenvolvedor na validação rigorosa de cada linha de código, testes manuais no emulador Android e verificação contínua no terminal foi o fator decisivo para o funcionamento integral do app.
+
+---
+
+## 4. Registro da Sprint 2 — Arquitetura, Estado, Testes e Qualidade (18/11/2026)
+
+- **O que foi pedido:** refatoração em camadas (`domain`, `data`, `presentation`, `di`) em `commonMain`, configuração do Koin, criação dos 3 ViewModels (`Lista`, `Adicionar`, `Detalhe`) com `StateFlow` e `UiState` selado, testes com Turbine/Koin, testes de interface (`runComposeUiTest`), `ktlint`/`detekt` e `docs/arquitetura.md`.
+- **O que foi aproveitado:** isolamento completo do domínio (conferido via `grep`), `LinkRepository` como interface com implementação em memória e dublê de teste, exaustividade de `when` na UI, 10 testes de ViewModel, 8 testes de interface em `desktopTest` e automação no CI.
+- **O que foi corrigido pelo desenvolvedor:** atualização de APIs depreciadas sugeridas inicialmente (`KoinApplication(application = ...)` para `koinConfiguration` e `runComposeUiTest` para `v2`), correção de edição indevida em `libs.versions.toml`, exclusão de arquivos gerados em `build/generated/` no `ktlint`/`detekt`, ajuste de regras para `@Composable`/`@Test` no `detekt.yml` e validação contínua com `./gradlew` após cada mudança.

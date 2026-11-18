@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,17 +31,16 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.CircularProgressIndicator
-import com.lucasx7.linksaver.presentation.detalhe.DetalheLinkUiState
 import com.lucasx7.linksaver.domain.dominioDe
 import com.lucasx7.linksaver.domain.formatarData
+import com.lucasx7.linksaver.presentation.detalhe.DetalheLinkUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaDetalheLink(
     estado: DetalheLinkUiState,
     onVoltar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val linkAtual = (estado as? DetalheLinkUiState.Sucesso)?.link
     Scaffold(
@@ -49,165 +49,171 @@ fun TelaDetalheLink(
                 title = {
                     Text(
                         text = if (linkAtual != null) dominioDe(linkAtual.url) else "Detalhes",
-                        modifier = Modifier.semantics { heading() }
+                        modifier = Modifier.semantics { heading() },
                     )
                 },
                 navigationIcon = {
                     IconButton(
                         onClick = onVoltar,
-                        modifier = Modifier.semantics { contentDescription = "Voltar para a lista" }
+                        modifier = Modifier.semantics { contentDescription = "Voltar para a lista" },
                     ) {
                         Text(
                             text = "←",
-                            style = MaterialTheme.typography.titleLarge
+                            style = MaterialTheme.typography.titleLarge,
                         )
                     }
-                }
+                },
             )
         },
-        modifier = modifier
+        modifier = modifier,
     ) { paddingValues ->
         when (estado) {
-            DetalheLinkUiState.Carregando -> Box(Modifier.fillMaxSize().padding(paddingValues), Alignment.Center) {
-                CircularProgressIndicator(Modifier.semantics { contentDescription = "Carregando detalhes do link" })
-            }
+            DetalheLinkUiState.Carregando ->
+                Box(Modifier.fillMaxSize().padding(paddingValues), Alignment.Center) {
+                    CircularProgressIndicator(Modifier.semantics { contentDescription = "Carregando detalhes do link" })
+                }
             DetalheLinkUiState.NaoEncontrado -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Link não encontrado",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.semantics { heading() }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onVoltar) {
-                        Text("Voltar para a lista")
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .padding(16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Link não encontrado",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.semantics { heading() },
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = onVoltar) {
+                            Text("Voltar para a lista")
+                        }
                     }
                 }
-            }
             }
             is DetalheLinkUiState.Sucesso -> {
                 val link = estado.link
                 Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Cartão com a URL
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .padding(16.dp)
+                            .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "URL",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = link.url,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                // Descrição (se houver)
-                if (link.descricao.isNotBlank()) {
+                    // Cartão com a URL
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            ),
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "Descrição",
+                                text = "URL",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.outline
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = link.descricao,
-                                style = MaterialTheme.typography.bodyMedium
+                                text = link.url,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary,
                             )
                         }
                     }
-                }
 
-                // Tags com rolagem horizontal caso exceda a largura
-                if (link.tags.isNotEmpty()) {
-                    Column {
-                        Text(
-                            text = "Tags",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    // Descrição (se houver)
+                    if (link.descricao.isNotBlank()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =
+                                CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                ),
                         ) {
-                            link.tags.forEach { tag ->
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.secondaryContainer
-                                ) {
-                                    Text(
-                                        text = tag,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                    )
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = "Descrição",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = link.descricao,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
+                        }
+                    }
+
+                    // Tags com rolagem horizontal caso exceda a largura
+                    if (link.tags.isNotEmpty()) {
+                        Column {
+                            Text(
+                                text = "Tags",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                link.tags.forEach { tag ->
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                    ) {
+                                        Text(
+                                            text = tag,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                // Data de criação
-                Text(
-                    text = "Salvo em: ${formatarData(link.salvoEm)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    // Data de criação
+                    Text(
+                        text = "Salvo em: ${formatarData(link.salvoEm)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
 
-                // Estado de sincronização (Texto + Símbolo acessível)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (link.sincronizadoEm != null) {
-                        Text(
-                            text = "✓ Sincronizado em ${formatarData(link.sincronizadoEm)}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        Text(
-                            text = "⏳ Aguardando sincronização com o servidor",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
+                    // Estado de sincronização (Texto + Símbolo acessível)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (link.sincronizadoEm != null) {
+                            Text(
+                                text = "✓ Sincronizado em ${formatarData(link.sincronizadoEm)}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        } else {
+                            Text(
+                                text = "⏳ Aguardando sincronização com o servidor",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }

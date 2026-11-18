@@ -37,7 +37,12 @@ fun TelaAdicionarLink(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.safeContentPadding().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 32.dp),
+        modifier =
+            modifier
+                .safeContentPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+                .padding(bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         TextButton(onClick = onVoltar) { Text("← Voltar") }

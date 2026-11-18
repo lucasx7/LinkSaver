@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 class DetalheLinkViewModel(
     private val repository: LinkRepository,
 ) : ViewModel() {
-
     private val _estado = MutableStateFlow<DetalheLinkUiState>(DetalheLinkUiState.Carregando)
     val estado: StateFlow<DetalheLinkUiState> = _estado.asStateFlow()
 

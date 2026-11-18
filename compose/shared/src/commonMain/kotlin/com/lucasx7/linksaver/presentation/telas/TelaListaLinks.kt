@@ -52,7 +52,12 @@ fun TelaListaLinks(
         },
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).safeContentPadding().padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .safeContentPadding()
+                    .padding(horizontal = 16.dp),
         ) {
             Text(
                 text = "LinkSaver",
@@ -65,36 +70,40 @@ fun TelaListaLinks(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             when (estado) {
-                ListaLinksUiState.Carregando -> Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        CircularProgressIndicator(modifier = Modifier.semantics { contentDescription = "Carregando links" })
-                        Text("Carregando links...")
+                ListaLinksUiState.Carregando ->
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            CircularProgressIndicator(modifier = Modifier.semantics { contentDescription = "Carregando links" })
+                            Text("Carregando links...")
+                        }
                     }
-                }
-                ListaLinksUiState.Vazio -> Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("Nenhum link salvo ainda. Toque em + para adicionar o primeiro.")
-                }
-                is ListaLinksUiState.Erro -> Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(text = estado.mensagem, color = MaterialTheme.colorScheme.error)
-                        Button(onClick = onTentarDeNovo) { Text("Tentar de novo") }
+                ListaLinksUiState.Vazio ->
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text("Nenhum link salvo ainda. Toque em + para adicionar o primeiro.")
                     }
-                }
-                is ListaLinksUiState.Sucesso -> ListaLinksSucesso(
-                    links = estado.links,
-                    onAbrir = onAbrir,
-                    onRemover = onRemover,
-                    modifier = Modifier.weight(1f),
-                )
+                is ListaLinksUiState.Erro ->
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text(text = estado.mensagem, color = MaterialTheme.colorScheme.error)
+                            Button(onClick = onTentarDeNovo) { Text("Tentar de novo") }
+                        }
+                    }
+                is ListaLinksUiState.Sucesso ->
+                    ListaLinksSucesso(
+                        links = estado.links,
+                        onAbrir = onAbrir,
+                        onRemover = onRemover,
+                        modifier = Modifier.weight(1f),
+                    )
             }
         }
     }
@@ -124,7 +133,11 @@ private fun ListaLinksSucesso(
                 ) {
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(text = dominio, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Text(text = link.url, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = link.url,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     TextButton(
                         onClick = { onRemover(link.id) },

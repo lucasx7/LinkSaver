@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 class ListaLinksViewModel(
     private val repository: LinkRepository,
 ) : ViewModel() {
-
     private val _estado = MutableStateFlow<ListaLinksUiState>(ListaLinksUiState.Carregando)
     val estado: StateFlow<ListaLinksUiState> = _estado.asStateFlow()
 
@@ -28,9 +27,10 @@ class ListaLinksViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _estado.value = ListaLinksUiState.Erro(
-                    e.message ?: "Não foi possível carregar os links."
-                )
+                _estado.value =
+                    ListaLinksUiState.Erro(
+                        e.message ?: "Não foi possível carregar os links.",
+                    )
             }
         }
     }
@@ -53,7 +53,11 @@ class ListaLinksViewModel(
         }
     }
 
-    fun adicionar(url: String, descricao: String, tags: List<String>) {
+    fun adicionar(
+        url: String,
+        descricao: String,
+        tags: List<String>,
+    ) {
         viewModelScope.launch {
             try {
                 repository.adicionar(url, descricao, tags)

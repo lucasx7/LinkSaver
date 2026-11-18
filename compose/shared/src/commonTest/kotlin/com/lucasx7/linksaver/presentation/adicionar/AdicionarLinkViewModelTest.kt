@@ -36,10 +36,12 @@ class AdicionarLinkViewModelTest : KoinTest {
         stopKoin()
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         startKoin {
-            modules(module {
-                single<LinkRepository> { fakeRepo }
-                viewModel { AdicionarLinkViewModel(get()) }
-            })
+            modules(
+                module {
+                    single<LinkRepository> { fakeRepo }
+                    viewModel { AdicionarLinkViewModel(get()) }
+                },
+            )
         }
         try {
             bloco(get())
@@ -89,14 +91,15 @@ class AdicionarLinkViewModelTest : KoinTest {
     }
 
     @Test
-    fun rejeitarUrlDuplicadaExibeErroEMantemBotaoDesabilitado() = executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
-        advanceUntilIdle()
-        vm.estado.test {
-            awaitItem()
-            vm.aoMudarUrl("https://kotlinlang.org")
-            val duplicado = awaitItem()
-            assertEquals("Este link já foi salvo", duplicado.erroUrl)
-            assertFalse(duplicado.podeSalvar)
+    fun rejeitarUrlDuplicadaExibeErroEMantemBotaoDesabilitado() =
+        executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
+            advanceUntilIdle()
+            vm.estado.test {
+                awaitItem()
+                vm.aoMudarUrl("https://kotlinlang.org")
+                val duplicado = awaitItem()
+                assertEquals("Este link já foi salvo", duplicado.erroUrl)
+                assertFalse(duplicado.podeSalvar)
+            }
         }
-    }
 }
