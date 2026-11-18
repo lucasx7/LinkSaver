@@ -1,11 +1,9 @@
 package com.lucasx7.linksaver
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,24 +12,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,299 +31,122 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
-import com.lucasx7.linksaver.domain.Link
-import com.lucasx7.linksaver.domain.dominioDe
+import com.lucasx7.linksaver.di.appModule
 import com.lucasx7.linksaver.domain.validarUrl
+import com.lucasx7.linksaver.presentation.lista.ListaLinksUiState
+import com.lucasx7.linksaver.presentation.lista.ListaLinksViewModel
 import com.lucasx7.linksaver.presentation.navegacao.Adicionar
 import com.lucasx7.linksaver.presentation.navegacao.Detalhe
 import com.lucasx7.linksaver.presentation.navegacao.Lista
 import com.lucasx7.linksaver.presentation.telas.TelaDetalheLink
-import kotlin.time.Clock
+import com.lucasx7.linksaver.presentation.telas.TelaListaLinks
+import org.koin.compose.KoinApplication
+import org.koin.dsl.koinConfiguration
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun App() {
-    var links by remember { mutableStateOf(linksDeExemplo()) }
-    
-    // Estado unificado da navegação (sobrevive a qualquer rotação)
-    var rotaAtual by rememberSaveable { mutableStateOf("lista") } // "lista", "adicionar", "detalhe"
-    var idSelecionado by rememberSaveable { mutableStateOf(1) }
+    KoinApplication(koinConfiguration { modules(appModule) }) {
+        LinkSaverConteudo()
+    }
+}
 
-    // Estado do formulário no nível raiz (sobrevive a qualquer rotação)
+@Composable
+private fun LinkSaverConteudo(
+    listaViewModel: ListaLinksViewModel = koinViewModel(),
+) {
+    val estadoLista by listaViewModel.estado.collectAsStateWithLifecycle()
+    val links = (estadoLista as? ListaLinksUiState.Sucesso)?.links.orEmpty()
+    var rotaAtual by rememberSaveable { mutableStateOf("lista") }
+    var idSelecionado by rememberSaveable { mutableStateOf(1) }
     var formUrl by rememberSaveable { mutableStateOf("") }
     var formDescricao by rememberSaveable { mutableStateOf("") }
     var formTagsCsv by rememberSaveable { mutableStateOf("") }
-
     val navController = rememberNavController()
 
     MaterialTheme {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val ehTelaLarga = maxWidth >= 600.dp
-
             if (!ehTelaLarga) {
-                // Modo Estreito: Celular em pé
-                NavHost(
-                    navController = navController,
-                    startDestination = Lista,
-                    modifier = Modifier.fillMaxSize()
-                ) {
+                NavHost(navController = navController, startDestination = Lista, modifier = Modifier.fillMaxSize()) {
                     composable<Lista> {
                         rotaAtual = "lista"
                         TelaListaLinks(
-                            links = links,
-                            onAbrir = { id ->
-                                idSelecionado = id
-                                rotaAtual = "detalhe"
-                                navController.navigate(Detalhe(id))
-                            },
-                            onAdicionar = {
-                                rotaAtual = "adicionar"
-                                navController.navigate(Adicionar)
-                            },
-                            modifier = Modifier.fillMaxSize()
+                            estado = estadoLista,
+                            onAbrir = { id -> idSelecionado = id; rotaAtual = "detalhe"; navController.navigate(Detalhe(id)) },
+                            onAdicionar = { rotaAtual = "adicionar"; navController.navigate(Adicionar) },
+                            onTentarDeNovo = { listaViewModel.carregar() },
+                            onRemover = { listaViewModel.remover(it) },
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
-
                     composable<Adicionar> {
                         rotaAtual = "adicionar"
                         TelaAdicionarLink(
-                            url = formUrl,
-                            onUrlChange = { formUrl = it },
-                            descricao = formDescricao,
-                            onDescricaoChange = { formDescricao = it },
-                            tagsCsv = formTagsCsv,
-                            onTagsCsvChange = { formTagsCsv = it },
+                            url = formUrl, onUrlChange = { formUrl = it },
+                            descricao = formDescricao, onDescricaoChange = { formDescricao = it },
+                            tagsCsv = formTagsCsv, onTagsCsvChange = { formTagsCsv = it },
                             jaExistentes = links.map { it.url },
-                            onVoltar = {
-                                rotaAtual = "lista"
-                                navController.popBackStack()
+                            onVoltar = { rotaAtual = "lista"; navController.popBackStack() },
+                            onSalvar = { url, desc, tags ->
+                                listaViewModel.adicionar(url, desc, tags)
+                                formUrl = ""; formDescricao = ""; formTagsCsv = ""
+                                rotaAtual = "lista"; navController.popBackStack()
                             },
-                            onSalvar = { url, descricao, tags ->
-                                val agora = Clock.System.now().toEpochMilliseconds()
-                                val proximoId = (links.maxOfOrNull { it.id } ?: 0) + 1
-
-                                val novoLink = Link(
-                                    id = proximoId,
-                                    url = url.trim(),
-                                    descricao = descricao.trim(),
-                                    tags = tags,
-                                    salvoEm = agora,
-                                    sincronizadoEm = null
-                                )
-
-                                links = links + novoLink
-                                idSelecionado = proximoId
-                                formUrl = ""
-                                formDescricao = ""
-                                formTagsCsv = ""
-                                rotaAtual = "lista"
-                                navController.popBackStack()
-                            },
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
-
-                    composable<Detalhe>(
-                        deepLinks = listOf(
-                            navDeepLink<Detalhe>(basePath = "linksaver://link")
-                        )
-                    ) { backStackEntry ->
+                    composable<Detalhe>(deepLinks = listOf(navDeepLink<Detalhe>(basePath = "linksaver://link"))) { backStackEntry ->
                         val rota = backStackEntry.toRoute<Detalhe>()
-                        idSelecionado = rota.id
-                        rotaAtual = "detalhe"
-                        val linkEncontrado = links.find { it.id == rota.id }
-
-                        TelaDetalheLink(
-                            link = linkEncontrado,
-                            onVoltar = {
-                                rotaAtual = "lista"
-                                navController.popBackStack()
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-            } else {
-                // Modo Largo: Celular deitado / Tablet (Dois Painéis)
-                Row(modifier = Modifier.fillMaxSize()) {
-                    // Painel Esquerdo: Lista de links (40%)
-                    TelaListaLinks(
-                        links = links,
-                        onAbrir = { id ->
-                            idSelecionado = id
-                            rotaAtual = "detalhe"
-                        },
-                        onAdicionar = {
-                            rotaAtual = "adicionar"
-                        },
-                        modifier = Modifier
-                            .weight(0.4f)
-                            .fillMaxHeight()
-                    )
-
-                    // Painel Direito: Detalhes ou Formulário (60%)
-                    Box(
-                        modifier = Modifier
-                            .weight(0.6f)
-                            .fillMaxHeight()
-                    ) {
-                        if (rotaAtual == "adicionar") {
-                            // Se estava adicionando, continua adicionando com o texto intacto!
-                            TelaAdicionarLink(
-                                url = formUrl,
-                                onUrlChange = { formUrl = it },
-                                descricao = formDescricao,
-                                onDescricaoChange = { formDescricao = it },
-                                tagsCsv = formTagsCsv,
-                                onTagsCsvChange = { formTagsCsv = it },
-                                jaExistentes = links.map { it.url },
-                                onVoltar = { rotaAtual = "lista" },
-                                onSalvar = { url, descricao, tags ->
-                                    val agora = Clock.System.now().toEpochMilliseconds()
-                                    val proximoId = (links.maxOfOrNull { it.id } ?: 0) + 1
-
-                                    val novoLink = Link(
-                                        id = proximoId,
-                                        url = url.trim(),
-                                        descricao = descricao.trim(),
-                                        tags = tags,
-                                        salvoEm = agora,
-                                        sincronizadoEm = null
-                                    )
-
-                                    links = links + novoLink
-                                    idSelecionado = proximoId
-                                    formUrl = ""
-                                    formDescricao = ""
-                                    formTagsCsv = ""
-                                    rotaAtual = "detalhe"
-                                },
-                                modifier = Modifier.fillMaxSize()
-                            )
+                        idSelecionado = rota.id; rotaAtual = "detalhe"
+                        if (estadoLista is ListaLinksUiState.Carregando) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(Modifier.semantics { contentDescription = "Carregando link" })
+                            }
                         } else {
-                            // Exibe os detalhes do link selecionado
-                            val linkParaExibir = links.find { it.id == idSelecionado }
-                                ?: links.firstOrNull()
-
-                            TelaDetalheLink(
-                                link = linkParaExibir,
-                                onVoltar = { rotaAtual = "lista" },
-                                modifier = Modifier.fillMaxSize()
-                            )
+                            TelaDetalheLink(links.find { it.id == rota.id }, { rotaAtual = "lista"; navController.popBackStack() }, Modifier.fillMaxSize())
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TelaListaLinks(
-    links: List<Link>,
-    onAbrir: (Int) -> Unit,
-    onAdicionar: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Scaffold(
-        modifier = modifier,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAdicionar,
-                modifier = Modifier.semantics {
-                    contentDescription = "Adicionar link"
-                }
-            ) {
-                Text("+")
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .safeContentPadding()
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                text = "LinkSaver",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .semantics { heading() }
-            )
-
-            Text(
-                text = "Seus links salvos",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            ListaDeLinks(
-                links = links,
-                onAbrir = onAbrir,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun ListaDeLinks(
-    links: List<Link>,
-    onAbrir: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    if (links.isEmpty()) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Nenhum link salvo ainda. Toque em + para adicionar o primeiro.")
-        }
-    } else {
-        LazyColumn(
-            modifier = modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(vertical = 12.dp)
-        ) {
-            items(
-                items = links,
-                key = { link -> link.id }
-            ) { link ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onAbrir(link.id) },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    TelaListaLinks(
+                        estado = estadoLista,
+                        onAbrir = { id -> idSelecionado = id; rotaAtual = "detalhe" },
+                        onAdicionar = { rotaAtual = "adicionar" },
+                        onTentarDeNovo = { listaViewModel.carregar() },
+                        onRemover = { listaViewModel.remover(it) },
+                        modifier = Modifier.weight(0.4f).fillMaxHeight(),
                     )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = dominioDe(link.url),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-
-                        Text(
-                            text = link.url,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Box(modifier = Modifier.weight(0.6f).fillMaxHeight()) {
+                        if (rotaAtual == "adicionar") {
+                            TelaAdicionarLink(
+                                url = formUrl, onUrlChange = { formUrl = it },
+                                descricao = formDescricao, onDescricaoChange = { formDescricao = it },
+                                tagsCsv = formTagsCsv, onTagsCsvChange = { formTagsCsv = it },
+                                jaExistentes = links.map { it.url },
+                                onVoltar = { rotaAtual = "lista" },
+                                onSalvar = { url, desc, tags ->
+                                    listaViewModel.adicionar(url, desc, tags)
+                                    formUrl = ""; formDescricao = ""; formTagsCsv = ""; rotaAtual = "detalhe"
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else if (estadoLista is ListaLinksUiState.Carregando) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(Modifier.semantics { contentDescription = "Carregando link" })
+                            }
+                        } else {
+                            TelaDetalheLink(links.find { it.id == idSelecionado } ?: links.firstOrNull(), { rotaAtual = "lista" }, Modifier.fillMaxSize())
+                        }
                     }
                 }
             }
@@ -450,50 +265,5 @@ private fun TelaAdicionarLink(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-    }
-}
-
-private fun linksDeExemplo(): List<Link> = listOf(
-    Link(
-        id = 1,
-        url = "https://kotlinlang.org/docs",
-        descricao = "Documentação do Kotlin",
-        tags = listOf("Kotlin"),
-        salvoEm = 1_760_000_000_000L,
-        sincronizadoEm = null
-    ),
-    Link(
-        id = 2,
-        url = "https://developer.android.com/jetpack/compose",
-        descricao = "Documentação do Jetpack Compose",
-        tags = listOf("Android", "Compose"),
-        salvoEm = 1_760_000_000_000L,
-        sincronizadoEm = 1_760_000_001_000L
-    )
-)
-
-@Preview
-@Composable
-fun AppPreview() {
-    MaterialTheme {
-        TelaListaLinks(
-            links = linksDeExemplo(),
-            onAbrir = {},
-            onAdicionar = {},
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Preview
-@Composable
-fun ListaVaziaPreview() {
-    MaterialTheme {
-        TelaListaLinks(
-            links = emptyList(),
-            onAbrir = {},
-            onAdicionar = {},
-            modifier = Modifier.fillMaxSize()
-        )
     }
 }
