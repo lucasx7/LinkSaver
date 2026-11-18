@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,10 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -26,6 +22,7 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.lucasx7.linksaver.di.appModule
 import com.lucasx7.linksaver.presentation.adicionar.AdicionarLinkViewModel
+import com.lucasx7.linksaver.presentation.detalhe.DetalheLinkViewModel
 import com.lucasx7.linksaver.presentation.lista.ListaLinksUiState
 import com.lucasx7.linksaver.presentation.lista.ListaLinksViewModel
 import com.lucasx7.linksaver.presentation.navegacao.Adicionar
@@ -49,9 +46,11 @@ fun App() {
 private fun LinkSaverConteudo(
     listaViewModel: ListaLinksViewModel = koinViewModel(),
     adicionarViewModel: AdicionarLinkViewModel = koinViewModel(),
+    detalheViewModel: DetalheLinkViewModel = koinViewModel(),
 ) {
     val estadoLista by listaViewModel.estado.collectAsStateWithLifecycle()
     val estadoAdicionar by adicionarViewModel.estado.collectAsStateWithLifecycle()
+    val estadoDetalhe by detalheViewModel.estado.collectAsStateWithLifecycle()
     val links = (estadoLista as? ListaLinksUiState.Sucesso)?.links.orEmpty()
     var rotaAtual by rememberSaveable { mutableStateOf("lista") }
     var idSelecionado by rememberSaveable { mutableStateOf(1) }
@@ -91,11 +90,8 @@ private fun LinkSaverConteudo(
                     }
                     composable<Detalhe>(deepLinks = listOf(navDeepLink<Detalhe>(basePath = "linksaver://link"))) { backStackEntry ->
                         val rota = backStackEntry.toRoute<Detalhe>(); idSelecionado = rota.id; rotaAtual = "detalhe"
-                        if (estadoLista is ListaLinksUiState.Carregando) {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(Modifier.semantics { contentDescription = "Carregando link" })
-                            }
-                        } else { TelaDetalheLink(links.find { it.id == rota.id }, { rotaAtual = "lista"; navController.popBackStack() }, Modifier.fillMaxSize()) }
+                        LaunchedEffect(rota.id) { detalheViewModel.carregar(rota.id) }
+                        TelaDetalheLink(estadoDetalhe, { rotaAtual = "lista"; navController.popBackStack() }, Modifier.fillMaxSize())
                     }
                 }
             } else {
@@ -114,9 +110,11 @@ private fun LinkSaverConteudo(
                                 onAdicionarTag = adicionarViewModel::adicionarTag, onVoltar = { rotaAtual = "lista" },
                                 onSalvar = adicionarViewModel::salvar, modifier = Modifier.fillMaxSize(),
                             )
-                        } else if (estadoLista is ListaLinksUiState.Carregando) {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(Modifier.semantics { contentDescription = "Carregando link" }) }
-                        } else { TelaDetalheLink(links.find { it.id == idSelecionado } ?: links.firstOrNull(), { rotaAtual = "lista" }, Modifier.fillMaxSize()) }
+                        } else {
+                            val idEfetivo = links.find { it.id == idSelecionado }?.id ?: links.firstOrNull()?.id ?: idSelecionado
+                            LaunchedEffect(idEfetivo) { detalheViewModel.carregar(idEfetivo) }
+                            TelaDetalheLink(estadoDetalhe, { rotaAtual = "lista" }, Modifier.fillMaxSize())
+                        }
                     }
                 }
             }
