@@ -1,4 +1,4 @@
-package com.lucasx7.linksaver.dominio
+package com.lucasx7.linksaver.domain
 
 fun validarUrl(texto: String, jaExistentes: List<String>): String? = when {
     texto.isBlank() -> "Informe uma URL"

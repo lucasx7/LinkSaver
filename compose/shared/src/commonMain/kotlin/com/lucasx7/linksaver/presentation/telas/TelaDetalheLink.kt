@@ -1,4 +1,4 @@
-package com.lucasx7.linksaver.ui.telas
+package com.lucasx7.linksaver.presentation.telas
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -30,23 +30,25 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.lucasx7.linksaver.dominio.Link
-import com.lucasx7.linksaver.dominio.dominioDe
-import com.lucasx7.linksaver.dominio.formatarData
+import androidx.compose.material3.CircularProgressIndicator
+import com.lucasx7.linksaver.presentation.detalhe.DetalheLinkUiState
+import com.lucasx7.linksaver.domain.dominioDe
+import com.lucasx7.linksaver.domain.formatarData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaDetalheLink(
-    link: Link?,
+    estado: DetalheLinkUiState,
     onVoltar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val linkAtual = (estado as? DetalheLinkUiState.Sucesso)?.link
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = if (link != null) dominioDe(link.url) else "Detalhes",
+                        text = if (linkAtual != null) dominioDe(linkAtual.url) else "Detalhes",
                         modifier = Modifier.semantics { heading() }
                     )
                 },
@@ -65,7 +67,11 @@ fun TelaDetalheLink(
         },
         modifier = modifier
     ) { paddingValues ->
-        if (link == null) {
+        when (estado) {
+            DetalheLinkUiState.Carregando -> Box(Modifier.fillMaxSize().padding(paddingValues), Alignment.Center) {
+                CircularProgressIndicator(Modifier.semantics { contentDescription = "Carregando detalhes do link" })
+            }
+            DetalheLinkUiState.NaoEncontrado -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -86,8 +92,10 @@ fun TelaDetalheLink(
                     }
                 }
             }
-        } else {
-            Column(
+            }
+            is DetalheLinkUiState.Sucesso -> {
+                val link = estado.link
+                Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
@@ -201,4 +209,5 @@ fun TelaDetalheLink(
             }
         }
     }
+}
 }

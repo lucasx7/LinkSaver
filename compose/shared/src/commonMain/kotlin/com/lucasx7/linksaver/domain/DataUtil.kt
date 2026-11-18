@@ -1,4 +1,4 @@
-package com.lucasx7.linksaver.dominio
+package com.lucasx7.linksaver.domain
 
 /**
  * Converte timestamp em milissegundos (Long) para formato legível dd/MM/yyyy.

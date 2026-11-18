@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "sprint1-android-2026-10-16" ]
+    branches: [ "main", "sprint-2/**" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
   build-android:
-    name: Compilação Android (Compose)
+    name: Compilação e Testes Android (Compose)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -23,6 +23,10 @@ jobs:
 
       - name: Permissão de execução no gradlew
         run: chmod +x compose/gradlew
+
+      - name: Rodar testes compartilhados (ViewModels)
+        working-directory: compose
+        run: ./gradlew :shared:testAndroidHostTest --stacktrace
 
       - name: Compilar APK Debug do Android
         working-directory: compose

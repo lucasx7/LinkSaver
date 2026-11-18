@@ -1,4 +1,4 @@
-package com.lucasx7.linksaver.ui.navegacao
+package com.lucasx7.linksaver.presentation.navegacao
 
 import kotlinx.serialization.Serializable
 
