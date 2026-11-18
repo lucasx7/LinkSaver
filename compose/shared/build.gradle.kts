@@ -30,6 +30,8 @@ kotlin {
         browser()
         binaries.executable()
     }
+
+    jvm("desktop")
     
     android {
        namespace = "com.lucasx7.linksaver.shared"
@@ -78,6 +80,13 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
             implementation(libs.koin.test)
+            implementation(libs.compose.ui.test)
+        }
+        val desktopTest by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.kotlinx.coroutines.swing)
+            }
         }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
