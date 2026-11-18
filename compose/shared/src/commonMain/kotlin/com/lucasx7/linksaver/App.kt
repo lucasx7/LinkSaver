@@ -48,13 +48,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
-import com.lucasx7.linksaver.dominio.Link
-import com.lucasx7.linksaver.dominio.dominioDe
-import com.lucasx7.linksaver.dominio.validarUrl
-import com.lucasx7.linksaver.ui.navegacao.Adicionar
-import com.lucasx7.linksaver.ui.navegacao.Detalhe
-import com.lucasx7.linksaver.ui.navegacao.Lista
-import com.lucasx7.linksaver.ui.telas.TelaDetalheLink
+import com.lucasx7.linksaver.domain.Link
+import com.lucasx7.linksaver.domain.dominioDe
+import com.lucasx7.linksaver.domain.validarUrl
+import com.lucasx7.linksaver.presentation.navegacao.Adicionar
+import com.lucasx7.linksaver.presentation.navegacao.Detalhe
+import com.lucasx7.linksaver.presentation.navegacao.Lista
+import com.lucasx7.linksaver.presentation.telas.TelaDetalheLink
 import kotlin.time.Clock
 
 @Composable

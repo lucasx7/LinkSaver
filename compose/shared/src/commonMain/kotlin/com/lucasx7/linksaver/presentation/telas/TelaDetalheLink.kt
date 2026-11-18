@@ -1,4 +1,4 @@
-package com.lucasx7.linksaver.ui.telas
+package com.lucasx7.linksaver.presentation.telas
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -30,9 +30,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.lucasx7.linksaver.dominio.Link
-import com.lucasx7.linksaver.dominio.dominioDe
-import com.lucasx7.linksaver.dominio.formatarData
+import com.lucasx7.linksaver.domain.Link
+import com.lucasx7.linksaver.domain.dominioDe
+import com.lucasx7.linksaver.domain.formatarData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

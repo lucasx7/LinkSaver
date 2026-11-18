@@ -1,4 +1,4 @@
-package com.lucasx7.linksaver.dominio
+package com.lucasx7.linksaver.domain
 
 data class Link(
     val id: Int,
