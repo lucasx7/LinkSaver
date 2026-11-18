@@ -14,36 +14,39 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class TelaDetalheLinkTest {
     @Test
-    fun naoEncontrado_exibeMensagemEAcionaVoltar() = runComposeUiTest {
-        var voltou = false
-        setContent {
-            MaterialTheme {
-                TelaDetalheLink(DetalheLinkUiState.NaoEncontrado, { voltou = true })
+    fun naoEncontrado_exibeMensagemEAcionaVoltar() =
+        runComposeUiTest {
+            var voltou = false
+            setContent {
+                MaterialTheme {
+                    TelaDetalheLink(DetalheLinkUiState.NaoEncontrado, { voltou = true })
+                }
             }
+            onNodeWithText("Link não encontrado").assertIsDisplayed()
+            onNodeWithText("Voltar para a lista").performClick()
+            assertTrue(voltou)
         }
-        onNodeWithText("Link não encontrado").assertIsDisplayed()
-        onNodeWithText("Voltar para a lista").performClick()
-        assertTrue(voltou)
-    }
 
     @Test
-    fun sucesso_exibeUrlDescricaoETags() = runComposeUiTest {
-        val link = Link(
-            id = 1,
-            url = "https://ufrn.br/sigaa",
-            descricao = "Portal acadêmico",
-            tags = listOf("ufrn", "estudos"),
-            salvoEm = 1_700_000_000_000L,
-            sincronizadoEm = null,
-        )
-        setContent {
-            MaterialTheme {
-                TelaDetalheLink(DetalheLinkUiState.Sucesso(link), {})
+    fun sucesso_exibeUrlDescricaoETags() =
+        runComposeUiTest {
+            val link =
+                Link(
+                    id = 1,
+                    url = "https://ufrn.br/sigaa",
+                    descricao = "Portal acadêmico",
+                    tags = listOf("ufrn", "estudos"),
+                    salvoEm = 1_700_000_000_000L,
+                    sincronizadoEm = null,
+                )
+            setContent {
+                MaterialTheme {
+                    TelaDetalheLink(DetalheLinkUiState.Sucesso(link), {})
+                }
             }
+            onNodeWithText("https://ufrn.br/sigaa").assertIsDisplayed()
+            onNodeWithText("Portal acadêmico").assertIsDisplayed()
+            onNodeWithText("ufrn").assertIsDisplayed()
+            onNodeWithText("estudos").assertIsDisplayed()
         }
-        onNodeWithText("https://ufrn.br/sigaa").assertIsDisplayed()
-        onNodeWithText("Portal acadêmico").assertIsDisplayed()
-        onNodeWithText("ufrn").assertIsDisplayed()
-        onNodeWithText("estudos").assertIsDisplayed()
-    }
 }

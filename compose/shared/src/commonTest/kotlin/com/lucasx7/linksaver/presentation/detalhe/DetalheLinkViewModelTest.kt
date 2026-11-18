@@ -32,29 +32,38 @@ class DetalheLinkViewModelTest : KoinTest {
         stopKoin()
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         startKoin {
-            modules(module {
-                single<LinkRepository> { fakeRepo }
-                viewModel { DetalheLinkViewModel(get()) }
-            })
+            modules(
+                module {
+                    single<LinkRepository> { fakeRepo }
+                    viewModel { DetalheLinkViewModel(get()) }
+                },
+            )
         }
-        try { bloco(get()) } finally { stopKoin(); Dispatchers.resetMain() }
-    }
-
-    @Test
-    fun carregarIdExistenteEmiteCarregandoEDepoisSucesso() = executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
-        vm.estado.test {
-            assertIs<DetalheLinkUiState.Carregando>(awaitItem())
-            vm.carregar(1)
-            assertEquals("https://kotlinlang.org", assertIs<DetalheLinkUiState.Sucesso>(awaitItem()).link.url)
+        try {
+            bloco(get())
+        } finally {
+            stopKoin()
+            Dispatchers.resetMain()
         }
     }
 
     @Test
-    fun carregarIdInexistenteEmiteNaoEncontrado() = executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
-        vm.estado.test {
-            assertIs<DetalheLinkUiState.Carregando>(awaitItem())
-            vm.carregar(999)
-            assertIs<DetalheLinkUiState.NaoEncontrado>(awaitItem())
+    fun carregarIdExistenteEmiteCarregandoEDepoisSucesso() =
+        executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
+            vm.estado.test {
+                assertIs<DetalheLinkUiState.Carregando>(awaitItem())
+                vm.carregar(1)
+                assertEquals("https://kotlinlang.org", assertIs<DetalheLinkUiState.Sucesso>(awaitItem()).link.url)
+            }
         }
-    }
+
+    @Test
+    fun carregarIdInexistenteEmiteNaoEncontrado() =
+        executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
+            vm.estado.test {
+                assertIs<DetalheLinkUiState.Carregando>(awaitItem())
+                vm.carregar(999)
+                assertIs<DetalheLinkUiState.NaoEncontrado>(awaitItem())
+            }
+        }
 }

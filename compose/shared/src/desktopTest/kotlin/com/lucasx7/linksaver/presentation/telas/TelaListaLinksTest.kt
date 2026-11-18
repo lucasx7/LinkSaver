@@ -16,50 +16,64 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class TelaListaLinksTest {
     @Test
-    fun carregando_exibeIndicadorETexto() = runComposeUiTest {
-        setContent {
-            MaterialTheme {
-                TelaListaLinks(ListaLinksUiState.Carregando, {}, {}, {}, {})
+    fun carregando_exibeIndicadorETexto() =
+        runComposeUiTest {
+            setContent {
+                MaterialTheme {
+                    TelaListaLinks(ListaLinksUiState.Carregando, {}, {}, {}, {})
+                }
             }
+            onNodeWithContentDescription("Carregando links").assertIsDisplayed()
+            onNodeWithText("Carregando links...").assertIsDisplayed()
         }
-        onNodeWithContentDescription("Carregando links").assertIsDisplayed()
-        onNodeWithText("Carregando links...").assertIsDisplayed()
-    }
 
     @Test
-    fun vazio_exibeMensagemInicial() = runComposeUiTest {
-        setContent {
-            MaterialTheme {
-                TelaListaLinks(ListaLinksUiState.Vazio, {}, {}, {}, {})
+    fun vazio_exibeMensagemInicial() =
+        runComposeUiTest {
+            setContent {
+                MaterialTheme {
+                    TelaListaLinks(ListaLinksUiState.Vazio, {}, {}, {}, {})
+                }
             }
+            onNodeWithText("Nenhum link salvo ainda. Toque em + para adicionar o primeiro.").assertIsDisplayed()
         }
-        onNodeWithText("Nenhum link salvo ainda. Toque em + para adicionar o primeiro.").assertIsDisplayed()
-    }
 
     @Test
-    fun erro_exibeMensagemEAcionaTentarDeNovo() = runComposeUiTest {
-        var tentouDeNovo = false
-        setContent {
-            MaterialTheme {
-                TelaListaLinks(ListaLinksUiState.Erro("Falha de rede"), {}, {}, { tentouDeNovo = true }, {})
+    fun erro_exibeMensagemEAcionaTentarDeNovo() =
+        runComposeUiTest {
+            var tentouDeNovo = false
+            setContent {
+                MaterialTheme {
+                    TelaListaLinks(ListaLinksUiState.Erro("Falha de rede"), {}, {}, { tentouDeNovo = true }, {})
+                }
             }
+            onNodeWithText("Falha de rede").assertIsDisplayed()
+            onNodeWithText("Tentar de novo").performClick()
+            assertTrue(tentouDeNovo)
         }
-        onNodeWithText("Falha de rede").assertIsDisplayed()
-        onNodeWithText("Tentar de novo").performClick()
-        assertTrue(tentouDeNovo)
-    }
 
     @Test
-    fun sucesso_exibeLinkEAcionaRemover() = runComposeUiTest {
-        var idRemovido = -1
-        val links = listOf(Link(id = 7, url = "https://exemplo.com/a", descricao = "", tags = emptyList(), salvoEm = 1_700_000_000_000L, sincronizadoEm = null))
-        setContent {
-            MaterialTheme {
-                TelaListaLinks(ListaLinksUiState.Sucesso(links), {}, {}, {}, { idRemovido = it })
+    fun sucesso_exibeLinkEAcionaRemover() =
+        runComposeUiTest {
+            var idRemovido = -1
+            val links =
+                listOf(
+                    Link(
+                        id = 7,
+                        url = "https://exemplo.com/a",
+                        descricao = "",
+                        tags = emptyList(),
+                        salvoEm = 1_700_000_000_000L,
+                        sincronizadoEm = null,
+                    ),
+                )
+            setContent {
+                MaterialTheme {
+                    TelaListaLinks(ListaLinksUiState.Sucesso(links), {}, {}, {}, { idRemovido = it })
+                }
             }
+            onNodeWithText("exemplo.com").assertIsDisplayed()
+            onNodeWithContentDescription("Remover exemplo.com").performClick()
+            assertEquals(7, idRemovido)
         }
-        onNodeWithText("exemplo.com").assertIsDisplayed()
-        onNodeWithContentDescription("Remover exemplo.com").performClick()
-        assertEquals(7, idRemovido)
-    }
 }

@@ -61,10 +61,14 @@ private fun LinkSaverConteudo(
             val ehTelaLarga = maxWidth >= 600.dp
             LaunchedEffect(estadoAdicionar.salvo) {
                 if (estadoAdicionar.salvo) {
-                    listaViewModel.carregar(); adicionarViewModel.consumirSalvo()
+                    listaViewModel.carregar()
+                    adicionarViewModel.consumirSalvo()
                     if (!ehTelaLarga && navController.currentBackStackEntry != null) {
-                        rotaAtual = "lista"; navController.popBackStack()
-                    } else { rotaAtual = "detalhe" }
+                        rotaAtual = "lista"
+                        navController.popBackStack()
+                    } else {
+                        rotaAtual = "detalhe"
+                    }
                 }
             }
             if (!ehTelaLarga) {
@@ -73,42 +77,75 @@ private fun LinkSaverConteudo(
                         rotaAtual = "lista"
                         TelaListaLinks(
                             estado = estadoLista,
-                            onAbrir = { id -> idSelecionado = id; rotaAtual = "detalhe"; navController.navigate(Detalhe(id)) },
-                            onAdicionar = { adicionarViewModel.atualizarUrlsExistentes(); rotaAtual = "adicionar"; navController.navigate(Adicionar) },
-                            onTentarDeNovo = { listaViewModel.carregar() }, onRemover = { listaViewModel.remover(it) }, modifier = Modifier.fillMaxSize(),
+                            onAbrir = { id ->
+                                idSelecionado = id
+                                rotaAtual = "detalhe"
+                                navController.navigate(Detalhe(id))
+                            },
+                            onAdicionar = {
+                                adicionarViewModel.atualizarUrlsExistentes()
+                                rotaAtual = "adicionar"
+                                navController.navigate(Adicionar)
+                            },
+                            onTentarDeNovo = { listaViewModel.carregar() },
+                            onRemover = { listaViewModel.remover(it) },
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
                     composable<Adicionar> {
                         rotaAtual = "adicionar"
                         TelaAdicionarLink(
-                            estado = estadoAdicionar, onUrlChange = adicionarViewModel::aoMudarUrl,
-                            onDescricaoChange = adicionarViewModel::aoMudarDescricao, onTextoTagChange = adicionarViewModel::aoMudarTextoTag,
+                            estado = estadoAdicionar,
+                            onUrlChange = adicionarViewModel::aoMudarUrl,
+                            onDescricaoChange = adicionarViewModel::aoMudarDescricao,
+                            onTextoTagChange = adicionarViewModel::aoMudarTextoTag,
                             onAdicionarTag = adicionarViewModel::adicionarTag,
-                            onVoltar = { rotaAtual = "lista"; navController.popBackStack() },
-                            onSalvar = adicionarViewModel::salvar, modifier = Modifier.fillMaxSize(),
+                            onVoltar = {
+                                rotaAtual = "lista"
+                                navController.popBackStack()
+                            },
+                            onSalvar = adicionarViewModel::salvar,
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
                     composable<Detalhe>(deepLinks = listOf(navDeepLink<Detalhe>(basePath = "linksaver://link"))) { backStackEntry ->
-                        val rota = backStackEntry.toRoute<Detalhe>(); idSelecionado = rota.id; rotaAtual = "detalhe"
+                        val rota = backStackEntry.toRoute<Detalhe>()
+                        idSelecionado = rota.id
+                        rotaAtual = "detalhe"
                         LaunchedEffect(rota.id) { detalheViewModel.carregar(rota.id) }
-                        TelaDetalheLink(estadoDetalhe, { rotaAtual = "lista"; navController.popBackStack() }, Modifier.fillMaxSize())
+                        TelaDetalheLink(estadoDetalhe, {
+                            rotaAtual = "lista"
+                            navController.popBackStack()
+                        }, Modifier.fillMaxSize())
                     }
                 }
             } else {
                 Row(modifier = Modifier.fillMaxSize()) {
                     TelaListaLinks(
-                        estado = estadoLista, onAbrir = { id -> idSelecionado = id; rotaAtual = "detalhe" },
-                        onAdicionar = { adicionarViewModel.atualizarUrlsExistentes(); rotaAtual = "adicionar" },
-                        onTentarDeNovo = { listaViewModel.carregar() }, onRemover = { listaViewModel.remover(it) },
+                        estado = estadoLista,
+                        onAbrir = { id ->
+                            idSelecionado = id
+                            rotaAtual = "detalhe"
+                        },
+                        onAdicionar = {
+                            adicionarViewModel.atualizarUrlsExistentes()
+                            rotaAtual = "adicionar"
+                        },
+                        onTentarDeNovo = { listaViewModel.carregar() },
+                        onRemover = { listaViewModel.remover(it) },
                         modifier = Modifier.weight(0.4f).fillMaxHeight(),
                     )
                     Box(modifier = Modifier.weight(0.6f).fillMaxHeight()) {
                         if (rotaAtual == "adicionar") {
                             TelaAdicionarLink(
-                                estado = estadoAdicionar, onUrlChange = adicionarViewModel::aoMudarUrl,
-                                onDescricaoChange = adicionarViewModel::aoMudarDescricao, onTextoTagChange = adicionarViewModel::aoMudarTextoTag,
-                                onAdicionarTag = adicionarViewModel::adicionarTag, onVoltar = { rotaAtual = "lista" },
-                                onSalvar = adicionarViewModel::salvar, modifier = Modifier.fillMaxSize(),
+                                estado = estadoAdicionar,
+                                onUrlChange = adicionarViewModel::aoMudarUrl,
+                                onDescricaoChange = adicionarViewModel::aoMudarDescricao,
+                                onTextoTagChange = adicionarViewModel::aoMudarTextoTag,
+                                onAdicionarTag = adicionarViewModel::adicionarTag,
+                                onVoltar = { rotaAtual = "lista" },
+                                onSalvar = adicionarViewModel::salvar,
+                                modifier = Modifier.fillMaxSize(),
                             )
                         } else {
                             val idEfetivo = links.find { it.id == idSelecionado }?.id ?: links.firstOrNull()?.id ?: idSelecionado

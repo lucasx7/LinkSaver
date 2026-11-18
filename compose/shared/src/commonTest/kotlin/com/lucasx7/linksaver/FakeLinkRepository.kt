@@ -20,7 +20,11 @@ class FakeLinkRepository(
 
     override suspend fun buscarPorId(id: Int): Link? = links.find { it.id == id }
 
-    override suspend fun adicionar(url: String, descricao: String, tags: List<String>): Link {
+    override suspend fun adicionar(
+        url: String,
+        descricao: String,
+        tags: List<String>,
+    ): Link {
         val urlLimpa = url.trim()
         val erro = validarUrl(urlLimpa, links.map { it.url })
         require(erro == null) { erro ?: "URL inválida" }

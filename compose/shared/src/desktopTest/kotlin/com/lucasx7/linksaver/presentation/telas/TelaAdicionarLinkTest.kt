@@ -15,32 +15,35 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class TelaAdicionarLinkTest {
     @Test
-    fun urlInvalida_exibeErroEDesabilitaSalvar() = runComposeUiTest {
-        val estado = AdicionarLinkUiState(
-            url = "ftp://x",
-            erroUrl = "URL inválida",
-            podeSalvar = false,
-        )
-        setContent {
-            MaterialTheme {
-                TelaAdicionarLink(estado, {}, {}, {}, {}, {}, {})
+    fun urlInvalida_exibeErroEDesabilitaSalvar() =
+        runComposeUiTest {
+            val estado =
+                AdicionarLinkUiState(
+                    url = "ftp://x",
+                    erroUrl = "URL inválida",
+                    podeSalvar = false,
+                )
+            setContent {
+                MaterialTheme {
+                    TelaAdicionarLink(estado, {}, {}, {}, {}, {}, {})
+                }
             }
+            onNodeWithText("URL inválida").assertIsDisplayed()
+            onNodeWithText("Salvar link").assertIsNotEnabled()
         }
-        onNodeWithText("URL inválida").assertIsDisplayed()
-        onNodeWithText("Salvar link").assertIsNotEnabled()
-    }
 
     @Test
-    fun estadoValido_habilitaEAcionaSalvar() = runComposeUiTest {
-        var salvou = false
-        val estado = AdicionarLinkUiState(url = "https://ufrn.br", podeSalvar = true)
-        setContent {
-            MaterialTheme {
-                TelaAdicionarLink(estado, {}, {}, {}, {}, {}, { salvou = true })
+    fun estadoValido_habilitaEAcionaSalvar() =
+        runComposeUiTest {
+            var salvou = false
+            val estado = AdicionarLinkUiState(url = "https://ufrn.br", podeSalvar = true)
+            setContent {
+                MaterialTheme {
+                    TelaAdicionarLink(estado, {}, {}, {}, {}, {}, { salvou = true })
+                }
             }
+            onNodeWithText("Salvar link").assertIsEnabled()
+            onNodeWithText("Salvar link").performClick()
+            assertTrue(salvou)
         }
-        onNodeWithText("Salvar link").assertIsEnabled()
-        onNodeWithText("Salvar link").performClick()
-        assertTrue(salvou)
-    }
 }

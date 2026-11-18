@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 class AdicionarLinkViewModel(
     private val repository: LinkRepository,
 ) : ViewModel() {
-
     private val _estado = MutableStateFlow(AdicionarLinkUiState())
     val estado: StateFlow<AdicionarLinkUiState> = _estado.asStateFlow()
     private var urlsExistentes: List<String> = emptyList()

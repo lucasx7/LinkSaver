@@ -19,32 +19,44 @@ class LinkRepositoryEmMemoria(
         return links.toList()
     }
 
-    override suspend fun buscarPorId(id: Int): Link? =
-        links.find { it.id == id }
+    override suspend fun buscarPorId(id: Int): Link? = links.find { it.id == id }
 
     override suspend fun remover(id: Int) {
         links.removeAll { it.id == id }
     }
 
-    override suspend fun adicionar(url: String, descricao: String, tags: List<String>): Link {
+    override suspend fun adicionar(
+        url: String,
+        descricao: String,
+        tags: List<String>,
+    ): Link {
         val urlLimpa = url.trim()
         val erro = validarUrl(urlLimpa, links.map { it.url })
         require(erro == null) { erro ?: "URL inválida" }
         val proximoId = (links.maxOfOrNull { it.id } ?: 0) + 1
-        val novo = Link(
-            id = proximoId,
-            url = urlLimpa,
-            descricao = descricao.trim(),
-            tags = tags.map { it.trim() }.filter { it.isNotEmpty() }.distinct(),
-            salvoEm = Clock.System.now().toEpochMilliseconds(),
-            sincronizadoEm = null,
-        )
+        val novo =
+            Link(
+                id = proximoId,
+                url = urlLimpa,
+                descricao = descricao.trim(),
+                tags = tags.map { it.trim() }.filter { it.isNotEmpty() }.distinct(),
+                salvoEm = Clock.System.now().toEpochMilliseconds(),
+                sincronizadoEm = null,
+            )
         links.add(novo)
         return novo
     }
 }
 
-private fun linksDeExemplo(): List<Link> = listOf(
-    Link(1, "https://kotlinlang.org/docs", "Documentação do Kotlin", listOf("Kotlin"), 1_760_000_000_000L, null),
-    Link(2, "https://developer.android.com/jetpack/compose", "Documentação do Jetpack Compose", listOf("Android", "Compose"), 1_760_000_000_000L, 1_760_000_001_000L),
-)
+private fun linksDeExemplo(): List<Link> =
+    listOf(
+        Link(1, "https://kotlinlang.org/docs", "Documentação do Kotlin", listOf("Kotlin"), 1_760_000_000_000L, null),
+        Link(
+            2,
+            "https://developer.android.com/jetpack/compose",
+            "Documentação do Jetpack Compose",
+            listOf("Android", "Compose"),
+            1_760_000_000_000L,
+            1_760_000_001_000L,
+        ),
+    )

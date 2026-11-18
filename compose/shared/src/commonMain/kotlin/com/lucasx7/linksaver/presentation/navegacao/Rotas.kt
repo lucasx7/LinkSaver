@@ -9,7 +9,11 @@ data object Lista
 data object Adicionar
 
 @Serializable
-data class Detalhe(val id: Int)
+data class Detalhe(
+    val id: Int,
+)
 
 @Serializable
-data class Editar(val id: Int)
+data class Editar(
+    val id: Int,
+)

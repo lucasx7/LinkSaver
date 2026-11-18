@@ -32,10 +32,12 @@ class ListaLinksViewModelTest : KoinTest {
         stopKoin()
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         startKoin {
-            modules(module {
-                single<LinkRepository> { fakeRepo }
-                viewModel { ListaLinksViewModel(get()) }
-            })
+            modules(
+                module {
+                    single<LinkRepository> { fakeRepo }
+                    viewModel { ListaLinksViewModel(get()) }
+                },
+            )
         }
         try {
             bloco(get())
@@ -46,28 +48,31 @@ class ListaLinksViewModelTest : KoinTest {
     }
 
     @Test
-    fun carregarComLinksEmiteCarregandoEDepoisSucesso() = executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
-        vm.estado.test {
-            assertIs<ListaLinksUiState.Carregando>(awaitItem())
-            assertEquals(1, assertIs<ListaLinksUiState.Sucesso>(awaitItem()).links.size)
+    fun carregarComLinksEmiteCarregandoEDepoisSucesso() =
+        executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
+            vm.estado.test {
+                assertIs<ListaLinksUiState.Carregando>(awaitItem())
+                assertEquals(1, assertIs<ListaLinksUiState.Sucesso>(awaitItem()).links.size)
+            }
         }
-    }
 
     @Test
-    fun carregarSemLinksEmiteCarregandoEDepoisVazio() = executarComKoin(FakeLinkRepository(emptyList())) { vm ->
-        vm.estado.test {
-            assertIs<ListaLinksUiState.Carregando>(awaitItem())
-            assertIs<ListaLinksUiState.Vazio>(awaitItem())
+    fun carregarSemLinksEmiteCarregandoEDepoisVazio() =
+        executarComKoin(FakeLinkRepository(emptyList())) { vm ->
+            vm.estado.test {
+                assertIs<ListaLinksUiState.Carregando>(awaitItem())
+                assertIs<ListaLinksUiState.Vazio>(awaitItem())
+            }
         }
-    }
 
     @Test
-    fun carregarComErroEmiteCarregandoEDepoisErro() = executarComKoin(FakeLinkRepository(deveFalhar = true)) { vm ->
-        vm.estado.test {
-            assertIs<ListaLinksUiState.Carregando>(awaitItem())
-            assertEquals("Falha simulada", assertIs<ListaLinksUiState.Erro>(awaitItem()).mensagem)
+    fun carregarComErroEmiteCarregandoEDepoisErro() =
+        executarComKoin(FakeLinkRepository(deveFalhar = true)) { vm ->
+            vm.estado.test {
+                assertIs<ListaLinksUiState.Carregando>(awaitItem())
+                assertEquals("Falha simulada", assertIs<ListaLinksUiState.Erro>(awaitItem()).mensagem)
+            }
         }
-    }
 
     @Test
     fun tentarDeNovoAposErroRecuperaParaSucesso() {
@@ -85,12 +90,13 @@ class ListaLinksViewModelTest : KoinTest {
     }
 
     @Test
-    fun removerUltimoLinkEmiteVazio() = executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
-        vm.estado.test {
-            assertIs<ListaLinksUiState.Carregando>(awaitItem())
-            assertIs<ListaLinksUiState.Sucesso>(awaitItem())
-            vm.remover(1)
-            assertIs<ListaLinksUiState.Vazio>(awaitItem())
+    fun removerUltimoLinkEmiteVazio() =
+        executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
+            vm.estado.test {
+                assertIs<ListaLinksUiState.Carregando>(awaitItem())
+                assertIs<ListaLinksUiState.Sucesso>(awaitItem())
+                vm.remover(1)
+                assertIs<ListaLinksUiState.Vazio>(awaitItem())
+            }
         }
-    }
 }

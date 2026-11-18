@@ -8,9 +8,10 @@ import com.lucasx7.linksaver.presentation.lista.ListaLinksViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val appModule = module {
-    single<LinkRepository> { LinkRepositoryEmMemoria() }
-    viewModel { ListaLinksViewModel(get()) }
-    viewModel { AdicionarLinkViewModel(get()) }
-    viewModel { DetalheLinkViewModel(get()) }
-}
+val appModule =
+    module {
+        single<LinkRepository> { LinkRepositoryEmMemoria() }
+        viewModel { ListaLinksViewModel(get()) }
+        viewModel { AdicionarLinkViewModel(get()) }
+        viewModel { DetalheLinkViewModel(get()) }
+    }
