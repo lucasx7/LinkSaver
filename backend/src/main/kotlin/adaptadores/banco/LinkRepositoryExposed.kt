@@ -17,6 +17,8 @@ class LinkRepositoryExposed : LinkRepository {
         descricao = this[LinksTable.descricao],
         dataCriacao = this[LinksTable.dataCriacao],
         idUsuario = this[LinksTable.idUsuario],
+        titulo = this[LinksTable.titulo],
+        faviconUrl = this[LinksTable.faviconUrl],
     )
 
     override fun listar(limite: Int, deslocamento: Long): List<Link> = transaction {
@@ -40,6 +42,8 @@ class LinkRepositoryExposed : LinkRepository {
             it[LinksTable.descricao] = novo.descricao
             it[LinksTable.dataCriacao] = hoje
             it[LinksTable.idUsuario] = novo.idUsuario
+            it[LinksTable.titulo] = novo.titulo
+            it[LinksTable.faviconUrl] = novo.faviconUrl
         }
         Link(
             id = resultado[LinksTable.id],
@@ -47,6 +51,8 @@ class LinkRepositoryExposed : LinkRepository {
             descricao = novo.descricao,
             dataCriacao = hoje,
             idUsuario = novo.idUsuario,
+            titulo = novo.titulo,
+            faviconUrl = novo.faviconUrl,
         )
     }
 }
