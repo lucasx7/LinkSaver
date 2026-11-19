@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.lucasx7.linksaver.dominio.LinkRepository
 import com.lucasx7.linksaver.dominio.NovoLink
+import com.lucasx7.linksaver.dominio.RegrasLink
+import com.lucasx7.linksaver.dominio.UrlInvalidaException
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -49,8 +51,11 @@ fun Route.linkRoutes(repositorio: LinkRepository, extrator: ExtratorDeMetadados)
 
         post {
             val corpo = call.receive<CriarLinkRequisicao>()
-            val meta = withContext(Dispatchers.IO) { extrator.extrair(corpo.url) }
-            val criado = repositorio.criar(NovoLink(corpo.url, corpo.descricao, corpo.idUsuario, meta.titulo, meta.faviconUrl))
+            val urlLimpa = try { RegrasLink.validarUrl(corpo.url) } catch (e: UrlInvalidaException) {
+                return@post call.respond(HttpStatusCode.BadRequest, mapOf("erro" to (e.message ?: "URL invalida")))
+            }
+            val meta = withContext(Dispatchers.IO) { extrator.extrair(urlLimpa) }
+            val criado = repositorio.criar(NovoLink(urlLimpa, corpo.descricao, corpo.idUsuario, meta.titulo, meta.faviconUrl))
             call.response.header(HttpHeaders.Location, "/links/${criado.id}")
             call.respond(HttpStatusCode.Created, criado.paraResposta())
         }
