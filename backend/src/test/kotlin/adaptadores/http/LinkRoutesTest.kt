@@ -69,5 +69,7 @@ class LinkRoutesTest {
         val ok = client.get("/health")
         assertEquals(HttpStatusCode.OK, ok.status)
         assertTrue(ok.bodyAsText().contains("ok"))
+        assertTrue(client.get("/openapi.yaml").bodyAsText().contains("openapi: 3.0.3"))
+        assertEquals(HttpStatusCode.OK, client.get("/openapi").status)
     }
 }
