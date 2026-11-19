@@ -60,10 +60,12 @@ class LinkRoutesTest {
 
     @Test fun `POST links rejeita URL invalida com 400 e GET health responde 200`() = testApplication {
         environment { config = MapApplicationConfig() }
-        val ext = object : ExtratorDeMetadados { override fun extrair(u: String) = fail("nao devia chamar") }
+        val ext = object : ExtratorDeMetadados { override fun extrair(url: String) = fail("nao devia chamar") }
         application { this@application.install(ContentNegotiation) { jackson() }; configureRouting(RepoEmMemoria(), ext) }
         val bad = client.post("/links") { contentType(ContentType.Application.Json); setBody("""{"url":"ftp://x.com","idUsuario":1}""") }
         assertEquals(HttpStatusCode.BadRequest, bad.status)
+        assertTrue(bad.bodyAsText().contains("url-invalida"))
+        assertEquals(HttpStatusCode.NotFound, client.get("/links/999").status)
         val ok = client.get("/health")
         assertEquals(HttpStatusCode.OK, ok.status)
         assertTrue(ok.bodyAsText().contains("ok"))

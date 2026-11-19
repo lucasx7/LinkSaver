@@ -43,7 +43,7 @@ fun Route.linkRoutes(repositorio: LinkRepository, extrator: ExtratorDeMetadados)
         get("/{id}") {
             val link = call.parameters["id"]?.toIntOrNull()?.let { repositorio.buscarPorId(it) }
             if (link == null) {
-                call.respond(HttpStatusCode.NotFound)
+                call.responderProblema(HttpStatusCode.NotFound, "https://linksaver.dev/erros/nao-encontrado", "Link nao encontrado", "Nenhum link com este id")
             } else {
                 call.respond(link.paraResposta())
             }
@@ -52,7 +52,7 @@ fun Route.linkRoutes(repositorio: LinkRepository, extrator: ExtratorDeMetadados)
         post {
             val corpo = call.receive<CriarLinkRequisicao>()
             val urlLimpa = try { RegrasLink.validarUrl(corpo.url) } catch (e: UrlInvalidaException) {
-                return@post call.respond(HttpStatusCode.BadRequest, mapOf("erro" to (e.message ?: "URL invalida")))
+                return@post call.responderProblema(HttpStatusCode.BadRequest, "https://linksaver.dev/erros/url-invalida", "URL invalida", e.message ?: "URL invalida")
             }
             val meta = withContext(Dispatchers.IO) { extrator.extrair(urlLimpa) }
             val criado = repositorio.criar(NovoLink(urlLimpa, corpo.descricao, corpo.idUsuario, meta.titulo, meta.faviconUrl))
