@@ -8,3 +8,4 @@ CREATE TABLE links_list(
 
     FOREIGN KEY (id_user) REFERENCES usuario(id_user)
 );
+);

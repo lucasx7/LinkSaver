@@ -62,7 +62,7 @@ jobs:
 
       - name: Testes backend (unitarios, gRPC, rotas e Konsist)
         working-directory: backend
-        run: ./gradlew test --tests "*ArquiteturaTest" --tests "*RegrasLinkTest" --tests "*ExtratorDeMetadadosGrpcTest" --tests "*LinkRoutesTest" --stacktrace
+        run: ./gradlew test --stacktrace
 
   build-protos-go:
     name: Contrato Protobuf e Servico Go
@@ -86,3 +86,10 @@ jobs:
       - name: Testar e compilar servico Go
         working-directory: services/extrator-go
         run: go test -v ./... && go build ./...
+
+  build-docker:
+    name: Validar Docker Compose e Dockerfiles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config -q && docker compose build
