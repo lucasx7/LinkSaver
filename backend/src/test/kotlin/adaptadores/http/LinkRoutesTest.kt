@@ -1,6 +1,7 @@
 package com.lucasx7.linksaver.adaptadores.http
 
 import com.lucasx7.linksaver.adaptadores.grpc.ExtratorDeMetadadosGrpc
+import com.lucasx7.linksaver.configureRouting
 import com.lucasx7.linksaver.dominio.*
 import io.grpc.inprocess.*
 import io.grpc.stub.StreamObserver
@@ -55,5 +56,20 @@ class LinkRoutesTest {
             assertEquals(HttpStatusCode.Created, resp.status)
             assertTrue(resp.bodyAsText().contains(""""titulo":null"""))
         } finally { canal.shutdownNow() }
+    }
+
+    @Test fun `POST links rejeita URL invalida com 400 e GET health responde 200`() = testApplication {
+        environment { config = MapApplicationConfig() }
+        val ext = object : ExtratorDeMetadados { override fun extrair(url: String) = fail("nao devia chamar") }
+        application { this@application.install(ContentNegotiation) { jackson() }; configureRouting(RepoEmMemoria(), ext) }
+        val bad = client.post("/links") { contentType(ContentType.Application.Json); setBody("""{"url":"ftp://x.com","idUsuario":1}""") }
+        assertEquals(HttpStatusCode.BadRequest, bad.status)
+        assertTrue(bad.bodyAsText().contains("url-invalida"))
+        assertEquals(HttpStatusCode.NotFound, client.get("/links/999").status)
+        val ok = client.get("/health")
+        assertEquals(HttpStatusCode.OK, ok.status)
+        assertTrue(ok.bodyAsText().contains("ok"))
+        assertTrue(client.get("/openapi.yaml").bodyAsText().contains("openapi: 3.0.3"))
+        assertEquals(HttpStatusCode.OK, client.get("/openapi").status)
     }
 }

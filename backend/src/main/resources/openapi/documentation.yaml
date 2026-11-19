@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: LinkSaver API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Health check da API
+      responses:
+        "200": { description: API saudavel }
+  /links:
+    get:
+      summary: Lista links paginados
+      responses:
+        "200": { description: Lista de links }
+    post:
+      summary: Cria link e extrai metadados via gRPC (degrada se Go cair)
+      responses:
+        "201": { description: Link criado }
+        "400": { description: URL invalida (Problem Details) }
+  /links/{id}:
+    get:
+      summary: Busca link por id
+      responses:
+        "200": { description: Link encontrado }
+        "404": { description: Nao encontrado (Problem Details) }

@@ -45,6 +45,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:4.36.2")
     compileOnly("org.apache.tomcat:annotations-api:6.0.53")
     testImplementation("io.grpc:grpc-inprocess:1.85.1")
+    testImplementation("com.lemonappdev:konsist:0.18.1")
     testImplementation(ktorLibs.server.testHost)
 
     //implementation("org.flywaydb:flyway-core")
