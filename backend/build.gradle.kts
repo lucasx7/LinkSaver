@@ -46,6 +46,7 @@ dependencies {
     compileOnly("org.apache.tomcat:annotations-api:6.0.53")
     testImplementation("io.grpc:grpc-inprocess:1.85.1")
     testImplementation("com.lemonappdev:konsist:0.18.1")
+    testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
     testImplementation(ktorLibs.server.testHost)
 
     //implementation("org.flywaydb:flyway-core")
