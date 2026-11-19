@@ -1,6 +1,9 @@
 package com.lucasx7.linksaver.adaptadores.http
 
+import com.lucasx7.linksaver.dominio.ExtratorDeMetadados
 import com.lucasx7.linksaver.dominio.Link
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.lucasx7.linksaver.dominio.LinkRepository
 import com.lucasx7.linksaver.dominio.NovoLink
 import io.ktor.http.*
@@ -14,6 +17,8 @@ data class LinkResposta(
     val descricao: String?,
     val dataCriacao: String,
     val idUsuario: Int,
+    val titulo: String? = null,
+    val faviconUrl: String? = null,
 )
 
 data class CriarLinkRequisicao(
@@ -22,9 +27,9 @@ data class CriarLinkRequisicao(
     val idUsuario: Int,
 )
 
-private fun Link.paraResposta() = LinkResposta(id, url, descricao, dataCriacao.toString(), idUsuario)
+private fun Link.paraResposta() = LinkResposta(id, url, descricao, dataCriacao.toString(), idUsuario, titulo, faviconUrl)
 
-fun Route.linkRoutes(repositorio: LinkRepository) {
+fun Route.linkRoutes(repositorio: LinkRepository, extrator: ExtratorDeMetadados) {
     route("/links") {
         get {
             val pagina = (call.request.queryParameters["pagina"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
@@ -44,7 +49,8 @@ fun Route.linkRoutes(repositorio: LinkRepository) {
 
         post {
             val corpo = call.receive<CriarLinkRequisicao>()
-            val criado = repositorio.criar(NovoLink(corpo.url, corpo.descricao, corpo.idUsuario))
+            val meta = withContext(Dispatchers.IO) { extrator.extrair(corpo.url) }
+            val criado = repositorio.criar(NovoLink(corpo.url, corpo.descricao, corpo.idUsuario, meta.titulo, meta.faviconUrl))
             call.response.header(HttpHeaders.Location, "/links/${criado.id}")
             call.respond(HttpStatusCode.Created, criado.paraResposta())
         }

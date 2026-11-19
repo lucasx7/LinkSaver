@@ -1,2 +1,5 @@
 .idea/
 .kotlin/
+
+# Stubs gerados pelo buf
+services/extrator-go/gen/

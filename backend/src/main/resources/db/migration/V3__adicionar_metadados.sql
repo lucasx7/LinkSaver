@@ -1,0 +1,3 @@
+ALTER TABLE links_list
+    ADD COLUMN IF NOT EXISTS titulo TEXT,
+    ADD COLUMN IF NOT EXISTS favicon_url TEXT;

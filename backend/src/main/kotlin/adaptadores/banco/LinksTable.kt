@@ -9,6 +9,8 @@ object LinksTable : Table("links_list") {
     val descricao = text("descricao").nullable()
     val dataCriacao = date("data_criacao")
     val idUsuario = integer("id_user")
+    val titulo = text("titulo").nullable()
+    val faviconUrl = text("favicon_url").nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

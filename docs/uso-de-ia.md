@@ -39,3 +39,9 @@ O processo evidenciou que assistentes de IA não devem ser seguidos cegamente: m
 - **O que foi pedido:** refatoração em camadas (`domain`, `data`, `presentation`, `di`) em `commonMain`, configuração do Koin, criação dos 3 ViewModels (`Lista`, `Adicionar`, `Detalhe`) com `StateFlow` e `UiState` selado, testes com Turbine/Koin, testes de interface (`runComposeUiTest`), `ktlint`/`detekt` e `docs/arquitetura.md`.
 - **O que foi aproveitado:** isolamento completo do domínio (conferido via `grep`), `LinkRepository` como interface com implementação em memória e dublê de teste, exaustividade de `when` na UI, 10 testes de ViewModel, 8 testes de interface em `desktopTest` e automação no CI.
 - **O que foi corrigido pelo desenvolvedor:** atualização de APIs depreciadas sugeridas inicialmente (`KoinApplication(application = ...)` para `koinConfiguration` e `runComposeUiTest` para `v2`), correção de edição indevida em `libs.versions.toml`, exclusão de arquivos gerados em `build/generated/` no `ktlint`/`detekt`, ajuste de regras para `@Composable`/`@Test` no `detekt.yml` e validação contínua com `./gradlew` após cada mudança.
+
+## 5. Registro da Sprint 2 Web II — Servico Go, Protobuf e gRPC (19/11/2026)
+
+- **O que foi pedido:** ADR 0001, dominio Go puro (`internal/extrator`), contrato `.proto` com `buf`, servidor gRPC em Go (`bufconn` + `grpcurl`), porta/adaptador gRPC no Ktor com prazo e degradacao, e testes com `InProcessServer`.
+- **O que foi aproveitado:** isolamento de dominio em Go (`DOMINIO_GO_LIMPO`) e Kotlin (`DOMINIO_KT_LIMPO`), 4 testes unitarios em Go, teste `bufconn`, 3 testes `InProcessServer` no adaptador e 2 testes de rota `POST /links` no Ktor.
+- **O que foi corrigido pelo desenvolvedor:** ajuste da raiz do `buf lint`/`buf generate` dentro de `protos/`, decisao de nao versionar `services/extrator-go/gen/`, correcao do receptor `this@application.install` no Ktor 3 `testApplication` e validacao manual com `grpcurl`.
