@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package linksaver.metadados.v1;
+
+option go_package = "github.com/lucasx7/LinkSaver/services/extrator-go/gen/linksaver/metadados/v1;metadadosv1";
+
+// Servico responsavel por extrair metadados publicos de uma pagina web.
+service MetadadosService {
+  // Baixa a URL informada e devolve titulo e URL do favicon.
+  rpc ExtrairMetadados(ExtrairMetadadosRequest) returns (ExtrairMetadadosResponse);
+}
+
+// Requisicao com a URL do link salvo.
+message ExtrairMetadadosRequest {
+  // URL absoluta iniciada por http:// ou https://.
+  string url = 1;
+}
+
+// Resposta com os metadados extraidos da pagina.
+message ExtrairMetadadosResponse {
+  // Titulo HTML da pagina, ou vazio se ausente.
+  string titulo = 1;
+  // URL do favicon encontrado ou fallback /favicon.ico.
+  string favicon_url = 2;
+}
