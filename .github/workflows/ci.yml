@@ -59,3 +59,30 @@ jobs:
       - name: Compilar Backend
         working-directory: backend
         run: ./gradlew assemble --stacktrace
+
+      - name: Testes backend (unitarios, gRPC, rotas e Konsist)
+        working-directory: backend
+        run: ./gradlew test --tests "*ArquiteturaTest" --tests "*RegrasLinkTest" --tests "*ExtratorDeMetadadosGrpcTest" --tests "*LinkRoutesTest" --stacktrace
+
+  build-protos-go:
+    name: Contrato Protobuf e Servico Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: services/extrator-go/go.mod
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - name: Instalar plugins Go do Protobuf
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - name: Lint e stubs Protobuf
+        working-directory: protos
+        run: buf lint && buf generate
+      - name: Testar e compilar servico Go
+        working-directory: services/extrator-go
+        run: go test -v ./... && go build ./...
