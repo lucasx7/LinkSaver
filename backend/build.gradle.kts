@@ -1,3 +1,10 @@
+buildscript {
+    repositories { mavenCentral() }
+    dependencies {
+        classpath("org.flywaydb:flyway-database-postgresql:10.11.0")
+        classpath("org.postgresql:postgresql:42.7.2")
+    }
+}
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -60,4 +67,11 @@ protobuf {
     protoc { artifact = "com.google.protobuf:protoc:4.36.2" }
     plugins { create("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.85.1" } }
     generateProtoTasks { all().forEach { it.plugins { create("grpc") } } }
+}
+
+flyway {
+    url = System.getenv("FLYWAY_URL") ?: ""
+    user = System.getenv("FLYWAY_USER") ?: ""
+    password = System.getenv("FLYWAY_PASSWORD") ?: ""
+    locations = arrayOf("filesystem:src/main/resources/db/migration")
 }
