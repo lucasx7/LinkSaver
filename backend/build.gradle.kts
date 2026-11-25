@@ -1,15 +1,6 @@
-buildscript {
-    repositories { mavenCentral() }
-    dependencies {
-        classpath("org.flywaydb:flyway-database-postgresql:10.11.0")
-        classpath("org.postgresql:postgresql:42.7.2")
-    }
-}
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(ktorLibs.plugins.ktor)
-    id("org.flywaydb.flyway") version "10.11.0"
     id("com.google.protobuf") version "0.10.1" 
 }
 
@@ -69,9 +60,8 @@ protobuf {
     generateProtoTasks { all().forEach { it.plugins { create("grpc") } } }
 }
 
-flyway {
-    url = System.getenv("FLYWAY_URL") ?: ""
-    user = System.getenv("FLYWAY_USER") ?: ""
-    password = System.getenv("FLYWAY_PASSWORD") ?: ""
-    locations = arrayOf("filesystem:src/main/resources/db/migration")
+tasks.register<JavaExec>("migrarBanco") {
+    group = "flyway"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.lucasx7.linksaver.MigrarBancoKt")
 }
