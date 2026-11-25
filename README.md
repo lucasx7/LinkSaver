@@ -1,29 +1,53 @@
-# LinkSaver 📌
+# LinkSaver
 
-Repositório unificado monorepo para as disciplinas de Dispositivos Móveis e Web II (UFRN - DIMAp).
+Monorepo das disciplinas de **Dispositivos Moveis** e **Web II** (UFRN - DIMAp).
+**Autor:** Lucas Oliveira | **Licenca:** [MIT](LICENSE) | **Sprint 2 (30/11/2026)**
 
-Autor: Lucas Oliveira  
-Entrega: Sprint 1 (16/10/2026)  
+## 1. Aplicativo Movel (Compose Multiplatform)
 
-## 📱 1. Aplicativo Móvel (Compose Multiplatform)
-- Telas do MVP: Lista em LazyColumn, formulário e tela de detalhes.
-- Validação: Bloqueio de URLs sem http/https e URLs duplicadas.
-- Tags: Adição dinâmica em chips.
-- Navegação: Rotas tipadas com @Serializable e Deep Link linksaver://link.
-- Responsividade: Layout adaptativo (BoxWithConstraints) em duas larguras com estado preservado na rotação via rememberSaveable.
-- Acessibilidade: Suporte a TalkBack, headings e alvos de toque >= 48dp.
+- **Camadas (`compose/shared/src/commonMain`):** `domain/` puro, `data/`,
+  `presentation/` (`ViewModel` + `StateFlow` + `UiState` selado) e `di/` (Koin).
+- **Recursos:** validacao URL (`http`/`https`), tags, detalhes, layout adaptativo
+  (`BoxWithConstraints`), TalkBack e Deep Link (`linksaver://link/{id}`).
+- **Qualidade e APK:** 19 testes (`desktopTest` + `testAndroidHostTest`),
+  `ktlintCheck`, `detekt` e APK na aba **Releases**.
 
-## 🖥️ 2. Servidor Backend (Kotlin + Ktor + Exposed)
-- Camadas: Domínio limpo isolado, repositório Exposed e rotas HTTP.
-- Migrações: Versionamento do PostgreSQL 17 com Flyway (V1 e V2).
-- Segurança: Senha do banco lida obrigatoriamente de DB_PASSWORD.
-- Endpoints: POST /links (201 Created + Location), GET /links (paginado) e GET /links/{id}.
-- Banco de Dados: Subir com docker compose up -d.
+~~~bash
+cd compose
+./gradlew :shared:desktopTest :shared:testAndroidHostTest
+./gradlew :shared:ktlintCheck :shared:detektCommonMainSourceSet \
+  :shared:detektCommonTestSourceSet :shared:detektDesktopTestSourceSet
+./gradlew :androidApp:assembleDebug
+adb shell am start -a android.intent.action.VIEW -d "linksaver://link/1"
+~~~
 
-## 🎬 3. Demonstração em Vídeo e Documentação
-- Vídeo e Minutagem detalhada: docs/demonstracao-video.md (2 min 42 s).
-- Relatório de Uso de IA: docs/uso-de-ia.md.
-- Relatório Técnico Completo: docs/relatorio-tecnico.html.
+## 2. Backend (Ktor) + Microsservico Go (gRPC)
 
-## ⚙️ 4. Integração Contínua (CI/CD)
-- GitHub Actions (.github/workflows/ci.yml) compilando Android e Backend com selo verde.
+- **Arquitetura:** dominio puro Kotlin verificado por **Konsist**, dominio puro
+  Go (`services/extrator-go`) e contrato Protobuf/gRPC (`buf lint`).
+- **Resiliencia e API:** prazo de 2s com **degradacao graciosa** (sem Go,
+  `POST /links` salva com metadados `null`), erros RFC 9457, `/health`,
+  OpenAPI (`/openapi.yaml` e `/openapi`) e Flyway (`V1`–`V4`).
+
+~~~bash
+docker compose up -d --build
+curl -s http://localhost:8080/health
+curl -X POST http://localhost:8080/links -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com","descricao":"Teste","idUsuario":1}'
+curl -s http://localhost:8080/links
+~~~
+
+### Testes e Banco em Nuvem (Neon + Actions)
+- Backend + Testcontainers + Konsist: `cd backend && ./gradlew test`
+- Servico Go: `cd services/extrator-go && go test -v ./...`
+- Neon (`sslmode=require`) + GitHub Secrets; `.github/workflows/migrate.yml`
+  executa `./gradlew migrarBanco` sob demanda aplicando `V1`–`V4`.
+
+## 3. Documentacao, ADRs e Videos (5 min)
+- [ADR 0001 (Go/gRPC)](docs/decisoes/0001-servico-go-extrator.md) |
+  [ADR 0002 (Neon/Secrets)](docs/decisoes/0002-implantacao-e-servico-go.md)
+- [Arquitetura Mobile](docs/arquitetura.md) | [Uso de IA](docs/uso-de-ia.md)
+- **Video Web II (Sprint 2):** *(link sera adicionado apos a gravacao)*
+- **Video Mobile (Sprint 2):** *(link sera adicionado apos a gravacao)*
+- [Video Sprint 1](docs/demonstracao-video.md) | `docs/relatorio-tecnico.html`
+- **CI:** `.github/workflows/ci.yml` (Android, Backend, Proto/Go e Docker).
