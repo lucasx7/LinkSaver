@@ -17,4 +17,4 @@ jobs:
           FLYWAY_URL: ${{ secrets.NEON_JDBC_URL }}
           FLYWAY_USER: ${{ secrets.NEON_USER }}
           FLYWAY_PASSWORD: ${{ secrets.NEON_PASSWORD }}
-        run: chmod +x gradlew && ./gradlew flywayMigrate flywayInfo --console=plain
+        run: chmod +x gradlew && ./gradlew migrarBanco --console=plain
