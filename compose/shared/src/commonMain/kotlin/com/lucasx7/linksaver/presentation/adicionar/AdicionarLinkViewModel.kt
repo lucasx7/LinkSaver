@@ -58,6 +58,15 @@ class AdicionarLinkViewModel(
         }
     }
 
+    fun preencherCompartilhado(
+        url: String,
+        descricao: String = "",
+    ) {
+        _estado.value = AdicionarLinkUiState(descricao = descricao.trim())
+        aoMudarUrl(url)
+        atualizarUrlsExistentes()
+    }
+
     fun consumirSalvo() {
         _estado.update { it.copy(salvo = false) }
     }

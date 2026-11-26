@@ -36,14 +36,15 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.koinConfiguration
 
 @Composable
-fun App() {
+fun App(linkCompartilhado: LinkCompartilhado? = null) {
     KoinApplication(koinConfiguration { modules(appModule) }) {
-        LinkSaverConteudo()
+        LinkSaverConteudo(linkCompartilhado = linkCompartilhado)
     }
 }
 
 @Composable
 private fun LinkSaverConteudo(
+    linkCompartilhado: LinkCompartilhado? = null,
     listaViewModel: ListaLinksViewModel = koinViewModel(),
     adicionarViewModel: AdicionarLinkViewModel = koinViewModel(),
     detalheViewModel: DetalheLinkViewModel = koinViewModel(),
@@ -59,6 +60,20 @@ private fun LinkSaverConteudo(
     MaterialTheme {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val ehTelaLarga = maxWidth >= 600.dp
+            var ultimoEvento by rememberSaveable { mutableStateOf(0L) }
+            LaunchedEffect(linkCompartilhado?.idEvento) {
+                val ev = linkCompartilhado ?: return@LaunchedEffect
+                if (ev.idEvento == ultimoEvento) return@LaunchedEffect
+                ultimoEvento = ev.idEvento
+                adicionarViewModel.preencherCompartilhado(ev.url, ev.descricao)
+                rotaAtual = "adicionar"
+                if (!ehTelaLarga) {
+                    navController.navigate(Adicionar) {
+                        popUpTo(Lista)
+                        launchSingleTop = true
+                    }
+                }
+            }
             LaunchedEffect(estadoAdicionar.salvo) {
                 if (estadoAdicionar.salvo) {
                     listaViewModel.carregar()

@@ -102,4 +102,19 @@ class AdicionarLinkViewModelTest : KoinTest {
                 assertFalse(duplicado.podeSalvar)
             }
         }
+
+    @Test
+    fun preencherCompartilhadoPreencheCamposEValidaDuplicata() =
+        executarComKoin(FakeLinkRepository(listOf(linkExemplo))) { vm ->
+            advanceUntilIdle()
+            vm.preencherCompartilhado("https://youtu.be/abc", "  Video teste  ")
+            advanceUntilIdle()
+            assertEquals("https://youtu.be/abc", vm.estado.value.url)
+            assertEquals("Video teste", vm.estado.value.descricao)
+            assertTrue(vm.estado.value.podeSalvar)
+            vm.preencherCompartilhado("https://kotlinlang.org")
+            advanceUntilIdle()
+            assertEquals("Este link já foi salvo", vm.estado.value.erroUrl)
+            assertFalse(vm.estado.value.podeSalvar)
+        }
 }
