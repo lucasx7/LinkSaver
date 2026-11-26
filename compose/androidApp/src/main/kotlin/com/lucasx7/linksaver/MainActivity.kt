@@ -1,6 +1,7 @@
 package com.lucasx7.linksaver
 
 import android.os.Bundle
+import com.lucasx7.linksaver.data.configurarArmazenamentoAndroid
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        configurarArmazenamentoAndroid(applicationContext)
 
         setContent {
             App()

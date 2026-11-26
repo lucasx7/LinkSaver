@@ -1,6 +1,7 @@
 package com.lucasx7.linksaver.di
 
-import com.lucasx7.linksaver.data.LinkRepositoryEmMemoria
+import com.lucasx7.linksaver.data.LinkRepositoryArquivo
+import com.lucasx7.linksaver.data.criarArmazenamentoLinks
 import com.lucasx7.linksaver.domain.LinkRepository
 import com.lucasx7.linksaver.presentation.adicionar.AdicionarLinkViewModel
 import com.lucasx7.linksaver.presentation.detalhe.DetalheLinkViewModel
@@ -10,7 +11,7 @@ import org.koin.dsl.module
 
 val appModule =
     module {
-        single<LinkRepository> { LinkRepositoryEmMemoria() }
+        single<LinkRepository> { LinkRepositoryArquivo(criarArmazenamentoLinks()) }
         viewModel { ListaLinksViewModel(get()) }
         viewModel { AdicionarLinkViewModel(get()) }
         viewModel { DetalheLinkViewModel(get()) }
