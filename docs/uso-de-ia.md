@@ -52,3 +52,7 @@ O processo evidenciou que assistentes de IA não devem ser seguidos cegamente: m
 - **O que foi aproveitado:** validacao real na VM Debian com os 3 containers saudaveis (`postgres`, `extrator`, `backend`), prova ao vivo da degradacao graciosa (`201 Created` com metadados `null` quando o Go para), `V4__usuario_padrao.sql` e `migrarBanco` no GitHub Actions aplicando `V1`..`V4` no Neon.
 - **O que foi corrigido pelo desenvolvedor:** adicao de `start_period: 30s` no Postgres do Compose apos falso `unhealthy` na primeira inicializacao; substituicao do plugin `org.flywaydb.flyway` `10.11.0` (incompativel com Gradle 9.5.1 por `JavaPluginConvention`) pela task `migrarBanco` (`MigrarBanco.kt`); e unificacao dos READMEs de Mobile e Web II sem sobrescrever entregas anteriores.
 - **Persistencia local extra (26/11):** adicionado `LinkRepositoryArquivo` (`expect`/`actual` para `filesDir` no Android e arquivo local no Desktop) com `LinkDto` serializado em JSON fora do `domain/`, 3 testes unitarios novos e validacao real no emulador com `force-stop`.
+- **Compartilhamento Android extra (26/11):** suporte a `ACTION_SEND` (`text/plain`)
+  no manifesto e `MainActivity` (`singleTop` + `onNewIntent`), funcao pura `extrairUrl`
+  no dominio, `LinkCompartilhado` em arquivo proprio (`detekt`), 2 testes novos
+  (24 no total) e validacao no emulador.
