@@ -6,6 +6,7 @@ data class AdicionarLinkUiState(
     val descricao: String = "",
     val textoTag: String = "",
     val tags: List<String> = emptyList(),
+    val tagsExistentes: List<String> = emptyList(),
     val erroUrl: String? = null,
     val podeSalvar: Boolean = false,
     val salvando: Boolean = false,

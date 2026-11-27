@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.lucasx7.linksaver.domain.Link
 import com.lucasx7.linksaver.presentation.lista.ListaLinksUiState
@@ -75,5 +76,25 @@ class TelaListaLinksTest {
             onNodeWithText("exemplo.com").assertIsDisplayed()
             onNodeWithContentDescription("Remover exemplo.com").performClick()
             assertEquals(7, idRemovido)
+        }
+
+    @Test
+    fun sucesso_exibeTagsECampoDeBusca() =
+        runComposeUiTest {
+            var busca = ""
+            val link = Link(1, "https://youtu.be/abc", "", listOf("youtube"), 1L, null)
+            setContent {
+                TelaListaLinks(
+                    ListaLinksUiState.Sucesso(listOf(link)),
+                    {},
+                    {},
+                    {},
+                    {},
+                    onBuscaChange = { busca = it },
+                )
+            }
+            onNodeWithText("youtube").assertIsDisplayed()
+            onNodeWithText("Buscar por URL, descrição ou tag").performTextInput("dev")
+            assertEquals("dev", busca)
         }
 }

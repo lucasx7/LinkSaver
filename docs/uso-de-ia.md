@@ -56,3 +56,11 @@ O processo evidenciou que assistentes de IA não devem ser seguidos cegamente: m
   no manifesto e `MainActivity` (`singleTop` + `onNewIntent`), funcao pura `extrairUrl`
   no dominio, `LinkCompartilhado` em arquivo proprio (`detekt`), 2 testes novos
   (24 no total) e validacao no emulador.
+- **Acoes de detalhe e edicao (27/11):** botoes **Abrir link**, **Copiar URL** e
+  **Editar** na `TelaDetalheLink`, metodo `atualizar` no `LinkRepository` e rota tipada
+  `Editar` sem falso erro de URL duplicada; correcao do `detekt` (`TooManyFunctions` no
+  `AdicionarLinkViewModel` e `CyclomaticComplexMethod` no `App.kt` extraindo `PainelLargo`).
+- **Normalizacao de URL, tags e busca (27/11):** funcoes puras `normalizarUrl`,
+  `tagDoSite` e `filtrarLinks` no dominio, chips arredondados removiveis (`InputChip`),
+  tecla Enter/Done (`ImeAction.Done`), sugestao de tags existentes e busca em tempo real;
+  ajuste da regra `ComplexCondition` no `detekt` e expansao para 33 testes no total.

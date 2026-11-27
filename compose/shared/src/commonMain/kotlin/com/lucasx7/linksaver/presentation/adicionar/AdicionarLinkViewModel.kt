@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lucasx7.linksaver.domain.Link
 import com.lucasx7.linksaver.domain.LinkRepository
+import com.lucasx7.linksaver.domain.normalizarUrl
+import com.lucasx7.linksaver.domain.tagDoSite
 import com.lucasx7.linksaver.domain.validarUrl
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +20,8 @@ class AdicionarLinkViewModel(
     private val _estado = MutableStateFlow(AdicionarLinkUiState())
     val estado: StateFlow<AdicionarLinkUiState> = _estado.asStateFlow()
     private var linksExistentes: List<Link> = emptyList()
+    private val tagsIgnoradas = mutableSetOf<String>()
+    private var ultimaTagAuto: String? = null
 
     init {
         atualizarUrlsExistentes()
@@ -27,6 +31,8 @@ class AdicionarLinkViewModel(
         viewModelScope.launch {
             try {
                 linksExistentes = repository.listar()
+                val existentes = tagsExistentesDe(linksExistentes)
+                _estado.update { it.copy(tagsExistentes = existentes) }
                 if (_estado.value.url.isNotEmpty()) aoMudarUrl(_estado.value.url)
             } catch (e: CancellationException) {
                 throw e
@@ -36,10 +42,14 @@ class AdicionarLinkViewModel(
     }
 
     fun aoMudarUrl(novaUrl: String) {
-        val limpa = novaUrl.trim()
-        val erro = validarUrl(limpa, urlsParaValidar())
-        _estado.update {
-            it.copy(url = novaUrl, erroUrl = erro, podeSalvar = erro == null && limpa.isNotEmpty() && !it.salvando)
+        val norm = normalizarUrl(novaUrl)
+        val erro = validarUrl(norm, urlsParaValidar(linksExistentes, _estado.value.idEdicao))
+        val novaTag = tagDoSite(norm)
+        _estado.update { atual ->
+            val tags = aplicarTagAuto(atual.tags, ultimaTagAuto, novaTag, tagsIgnoradas)
+            ultimaTagAuto = if (novaTag != null && novaTag !in tagsIgnoradas) novaTag else null
+            val ok = erro == null && norm.isNotEmpty() && !atual.salvando
+            atual.copy(url = novaUrl, tags = tags, erroUrl = erro, podeSalvar = ok)
         }
     }
 
@@ -51,56 +61,74 @@ class AdicionarLinkViewModel(
         _estado.update { it.copy(textoTag = novoTexto) }
     }
 
-    fun adicionarTag() {
+    fun adicionarTag(tagInformada: String? = null) {
         _estado.update { atual ->
-            val tagLimpa = atual.textoTag.trim()
-            val novasTags = if (tagLimpa.isNotEmpty() && tagLimpa !in atual.tags) atual.tags + tagLimpa else atual.tags
-            atual.copy(tags = novasTags, textoTag = "")
+            val limpa = (tagInformada ?: atual.textoTag).trim()
+            val repetida = atual.tags.any { it.equals(limpa, ignoreCase = true) }
+            val novas = if (limpa.isNotEmpty() && !repetida) atual.tags + limpa else atual.tags
+            val proxTexto = if (tagInformada == null) "" else atual.textoTag
+            atual.copy(tags = novas, textoTag = proxTexto)
         }
+    }
+
+    fun removerTag(tag: String) {
+        tagsIgnoradas.add(tag)
+        if (ultimaTagAuto == tag) ultimaTagAuto = null
+        _estado.update { atual -> atual.copy(tags = atual.tags.filterNot { it == tag }) }
     }
 
     fun preencherCompartilhado(
         url: String,
         descricao: String = "",
     ) {
-        _estado.value = AdicionarLinkUiState(descricao = descricao.trim())
+        tagsIgnoradas.clear()
+        ultimaTagAuto = null
+        val existentes = tagsExistentesDe(linksExistentes)
+        _estado.value =
+            AdicionarLinkUiState(descricao = descricao.trim(), tagsExistentes = existentes)
         aoMudarUrl(url)
         atualizarUrlsExistentes()
     }
 
-    private fun urlsParaValidar(): List<String> = linksExistentes.filter { it.id != _estado.value.idEdicao }.map { it.url }
-
     fun iniciarNovo() {
-        _estado.value = AdicionarLinkUiState()
+        tagsIgnoradas.clear()
+        ultimaTagAuto = null
+        val existentes = tagsExistentesDe(linksExistentes)
+        _estado.value = AdicionarLinkUiState(tagsExistentes = existentes)
         atualizarUrlsExistentes()
-    }
-
-    fun carregarParaEdicao(id: Int) {
-        viewModelScope.launch {
-            linksExistentes = runCatching { repository.listar() }.getOrDefault(emptyList())
-            val l =
-                linksExistentes.find { it.id == id }
-                    ?: repository.buscarPorId(id) ?: return@launch
-            _estado.value =
-                AdicionarLinkUiState(
-                    l.id,
-                    l.url,
-                    l.descricao,
-                    "",
-                    l.tags,
-                    podeSalvar = true,
-                )
-        }
     }
 
     fun consumirSalvo() {
         _estado.update { it.copy(salvo = false, idEdicao = null) }
     }
 
+    fun carregarParaEdicao(id: Int) {
+        viewModelScope.launch {
+            linksExistentes = runCatching { repository.listar() }.getOrDefault(emptyList())
+            val l =
+                linksExistentes.find { it.id == id } ?: repository.buscarPorId(id)
+                    ?: return@launch
+            tagsIgnoradas.clear()
+            ultimaTagAuto = null
+            tagDoSite(l.url)?.let { t ->
+                if (l.tags.none { it.equals(t, ignoreCase = true) }) tagsIgnoradas.add(t)
+            }
+            _estado.value =
+                AdicionarLinkUiState(
+                    idEdicao = l.id,
+                    url = l.url,
+                    descricao = l.descricao,
+                    tags = l.tags,
+                    tagsExistentes = tagsExistentesDe(linksExistentes),
+                    podeSalvar = true,
+                )
+        }
+    }
+
     fun salvar() {
         val atual = _estado.value
-        val urlLimpa = atual.url.trim()
-        val erro = validarUrl(urlLimpa, urlsParaValidar())
+        val urlLimpa = normalizarUrl(atual.url)
+        val erro = validarUrl(urlLimpa, urlsParaValidar(linksExistentes, atual.idEdicao))
         if (erro != null) {
             _estado.update { it.copy(erroUrl = erro, podeSalvar = false) }
             return
@@ -109,22 +137,43 @@ class AdicionarLinkViewModel(
             _estado.update { it.copy(salvando = true, podeSalvar = false) }
             try {
                 if (atual.idEdicao != null) {
-                    repository.atualizar(
-                        atual.idEdicao,
-                        urlLimpa,
-                        atual.descricao,
-                        atual.tags,
-                    )
+                    repository.atualizar(atual.idEdicao, urlLimpa, atual.descricao, atual.tags)
                 } else {
                     repository.adicionar(urlLimpa, atual.descricao, atual.tags)
                 }
                 linksExistentes = repository.listar()
-                _estado.value = AdicionarLinkUiState(idEdicao = atual.idEdicao, salvo = true)
+                tagsIgnoradas.clear()
+                ultimaTagAuto = null
+                _estado.value =
+                    AdicionarLinkUiState(
+                        idEdicao = atual.idEdicao,
+                        salvo = true,
+                        tagsExistentes = tagsExistentesDe(linksExistentes),
+                    )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _estado.update { it.copy(salvando = false, erroUrl = e.message ?: "Erro ao salvar.", podeSalvar = false) }
+                val msg = e.message ?: "Erro ao salvar."
+                _estado.update { it.copy(salvando = false, erroUrl = msg, podeSalvar = false) }
             }
         }
     }
+}
+
+private fun urlsParaValidar(
+    links: List<Link>,
+    idEdicao: Int?,
+): List<String> = links.filter { it.id != idEdicao }.map { it.url }
+
+private fun tagsExistentesDe(links: List<Link>): List<String> = links.flatMap { it.tags }.distinct().sortedBy { it.lowercase() }
+
+private fun aplicarTagAuto(
+    tags: List<String>,
+    ant: String?,
+    nova: String?,
+    ignoradas: Set<String>,
+): List<String> {
+    val base = if (ant != null && ant != nova) tags.filterNot { it == ant } else tags
+    val existe = nova != null && base.any { it.equals(nova, ignoreCase = true) }
+    return if (nova != null && nova !in ignoradas && !existe) base + nova else base
 }

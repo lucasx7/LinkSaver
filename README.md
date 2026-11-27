@@ -7,10 +7,10 @@ Monorepo das disciplinas de **Dispositivos Moveis** e **Web II** (UFRN - DIMAp).
 
 - **Camadas (`compose/shared/src/commonMain`):** `domain/` puro, `data/` (persistencia local em JSON),
   `presentation/` (`ViewModel` + `StateFlow` + `UiState` selado) e `di/` (Koin).
-- **Recursos:** validacao URL (`http`/`https`), tags, detalhes, layout adaptativo
-  (`BoxWithConstraints`), TalkBack, Deep Link (`linksaver://link/{id}`) e
-  recebimento via Compartilhar (`ACTION_SEND`).
-- **Qualidade e APK:** 24 testes (`desktopTest` + `testAndroidHostTest`),
+- **Recursos:** normalizacao automatica de URL (`https://`), tag automatica por site,
+  chips removiveis e tags existentes, busca, abrir/copiar/editar detalhes,
+  layout adaptativo (`BoxWithConstraints`), TalkBack, Deep Link e `ACTION_SEND`.
+- **Qualidade e APK:** 33 testes (`desktopTest` + `testAndroidHostTest`),
   `ktlintCheck`, `detekt` e APK na aba **Releases**.
 
 ~~~bash
