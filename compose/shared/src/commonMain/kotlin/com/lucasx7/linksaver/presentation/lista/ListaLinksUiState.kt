@@ -11,6 +11,7 @@ sealed interface ListaLinksUiState {
         val links: List<Link>,
         val busca: String = "",
         val totalSemFiltro: Int = links.size,
+        val avisoOffline: String? = null,
     ) : ListaLinksUiState
 
     data class Erro(

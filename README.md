@@ -5,12 +5,15 @@ Monorepo das disciplinas de **Dispositivos Moveis** e **Web II** (UFRN - DIMAp).
 
 ## 1. Aplicativo Movel (Compose Multiplatform)
 
-- **Camadas (`compose/shared/src/commonMain`):** `domain/` puro, `data/` (persistencia local em JSON),
+- **Camadas (`compose/shared/src/commonMain`):** `domain/` puro, `data/` (`LinkApiClient` Ktor + cache JSON em `LinkRepositoryHibrido`),
   `presentation/` (`ViewModel` + `StateFlow` + `UiState` selado) e `di/` (Koin).
 - **Recursos:** normalizacao automatica de URL (`https://`), tag automatica por site,
   chips removiveis e tags existentes, busca, abrir/copiar/editar detalhes,
+  modo online/offline com sincronizacao de pendencias, erros de rede distintos,
   layout adaptativo (`BoxWithConstraints`), TalkBack, Deep Link e `ACTION_SEND`.
-- **Qualidade e APK:** 33 testes (`desktopTest` + `testAndroidHostTest`),
+- **Backend no App:** aponta para `http://10.0.2.2:8080` (emulador Android) e
+  `http://localhost:8080` (Desktop), com fallback para cache offline.
+- **Qualidade e APK:** 45 testes (`desktopTest` + `testAndroidHostTest`),
   `ktlintCheck`, `detekt` e APK na aba **Releases**.
 
 ~~~bash

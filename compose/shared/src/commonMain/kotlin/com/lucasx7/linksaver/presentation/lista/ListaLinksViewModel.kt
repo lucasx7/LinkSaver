@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lucasx7.linksaver.domain.Link
 import com.lucasx7.linksaver.domain.LinkRepository
+import com.lucasx7.linksaver.domain.RespostaInvalidaException
+import com.lucasx7.linksaver.domain.SemConexaoException
 import com.lucasx7.linksaver.domain.filtrarLinks
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,8 +33,10 @@ class ListaLinksViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                val msg = e.message ?: "Não foi possível carregar os links."
-                _estado.value = ListaLinksUiState.Erro(msg)
+                _estado.value =
+                    ListaLinksUiState.Erro(
+                        mensagemErro(e, "Não foi possível carregar os links."),
+                    )
             }
         }
     }
@@ -51,6 +55,7 @@ class ListaLinksViewModel(
                     links = filtrarLinks(todosLinks, buscaAtual),
                     busca = buscaAtual,
                     totalSemFiltro = todosLinks.size,
+                    avisoOffline = repository.avisoOffline,
                 )
             }
     }
@@ -70,8 +75,10 @@ class ListaLinksViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                val msg = e.message ?: "Não foi possível remover o link."
-                _estado.value = ListaLinksUiState.Erro(msg)
+                _estado.value =
+                    ListaLinksUiState.Erro(
+                        mensagemErro(e, "Não foi possível remover o link."),
+                    )
             }
         }
     }
@@ -88,9 +95,23 @@ class ListaLinksViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                val msg = e.message ?: "Não foi possível salvar o link."
-                _estado.value = ListaLinksUiState.Erro(msg)
+                _estado.value =
+                    ListaLinksUiState.Erro(
+                        mensagemErro(e, "Não foi possível salvar o link."),
+                    )
             }
         }
     }
+
+    private fun mensagemErro(
+        e: Exception,
+        padrao: String,
+    ): String =
+        when (e) {
+            is SemConexaoException ->
+                "Sem conexão com o servidor. Verifique se o backend está ligado."
+            is RespostaInvalidaException ->
+                e.message ?: "Resposta inválida do servidor."
+            else -> e.message ?: padrao
+        }
 }

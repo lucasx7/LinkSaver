@@ -88,6 +88,26 @@ internal class LinkRepositoryArquivo(
         return links[i]
     }
 
+    fun todosSemAtraso(): List<Link> = links.toList()
+
+    fun substituirTodos(novos: List<Link>) {
+        links.clear()
+        links.addAll(novos)
+        persistir()
+    }
+
+    fun marcarSincronizado(
+        id: Int,
+        sincEm: Long,
+        desc: String,
+    ): Link {
+        val i = links.indexOfFirst { it.id == id }
+        require(i >= 0) { "Link nao encontrado" }
+        links[i] = links[i].copy(sincronizadoEm = sincEm, descricao = desc.trim())
+        persistir()
+        return links[i]
+    }
+
     private fun carregarIniciais(padrao: List<Link>): List<Link> {
         val texto = armazenamento.ler() ?: return padrao
         return runCatching {

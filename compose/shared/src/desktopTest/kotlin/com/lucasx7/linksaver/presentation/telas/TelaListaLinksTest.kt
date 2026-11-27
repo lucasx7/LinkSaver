@@ -97,4 +97,24 @@ class TelaListaLinksTest {
             onNodeWithText("Buscar por URL, descrição ou tag").performTextInput("dev")
             assertEquals("dev", busca)
         }
+
+    @Test
+    fun sucesso_exibeBannerOfflineESincronizar() =
+        runComposeUiTest {
+            var sincronizou = false
+            val link = Link(1, "https://youtu.be/abc", "", listOf("youtube"), 1L, null)
+            val estado =
+                ListaLinksUiState.Sucesso(
+                    links = listOf(link),
+                    avisoOffline = "Modo offline ativo",
+                )
+            setContent {
+                MaterialTheme {
+                    TelaListaLinks(estado, {}, {}, { sincronizou = true }, {})
+                }
+            }
+            onNodeWithText("Modo offline ativo").assertIsDisplayed()
+            onNodeWithText("Sincronizar").performClick()
+            assertTrue(sincronizou)
+        }
 }
