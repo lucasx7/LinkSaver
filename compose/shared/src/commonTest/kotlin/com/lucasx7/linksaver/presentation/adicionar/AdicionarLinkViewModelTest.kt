@@ -63,7 +63,7 @@ class AdicionarLinkViewModelTest : KoinTest {
                 vm.aoMudarTextoTag("  UI  ")
                 awaitItem()
                 vm.adicionarTag()
-                assertEquals(listOf("UI"), awaitItem().tags)
+                assertEquals(listOf("compose", "UI"), awaitItem().tags)
                 vm.salvar()
                 assertTrue(awaitItem().salvando)
                 assertTrue(awaitItem().salvo)
@@ -79,7 +79,7 @@ class AdicionarLinkViewModelTest : KoinTest {
             advanceUntilIdle()
             vm.estado.test {
                 awaitItem()
-                vm.aoMudarUrl("exemplo.com")
+                vm.aoMudarUrl("ftp://x")
                 val invalido = awaitItem()
                 assertNotNull(invalido.erroUrl)
                 assertFalse(invalido.podeSalvar)
@@ -132,6 +132,26 @@ class AdicionarLinkViewModelTest : KoinTest {
             advanceUntilIdle()
             assertTrue(vm.estado.value.salvo)
             assertEquals("Kotlin atualizado", repo.buscarPorId(1)?.descricao)
+        }
+    }
+
+    @Test
+    fun normalizaUrlSemProtocoloEAdicionaERemoveTag() {
+        val repo = FakeLinkRepository(listOf(linkExemplo))
+        executarComKoin(repo) { vm ->
+            advanceUntilIdle()
+            assertEquals(listOf("Dev"), vm.estado.value.tagsExistentes)
+            vm.aoMudarUrl("youtube.com/watch?v=1")
+            assertTrue(vm.estado.value.podeSalvar)
+            assertEquals(listOf("youtube"), vm.estado.value.tags)
+            vm.removerTag("youtube")
+            vm.aoMudarUrl("youtube.com/watch?v=2")
+            assertEquals(emptyList(), vm.estado.value.tags)
+            vm.adicionarTag("Dev")
+            vm.salvar()
+            advanceUntilIdle()
+            assertEquals("https://youtube.com/watch?v=2", repo.buscarPorId(2)?.url)
+            assertEquals(listOf("Dev"), repo.buscarPorId(2)?.tags)
         }
     }
 }

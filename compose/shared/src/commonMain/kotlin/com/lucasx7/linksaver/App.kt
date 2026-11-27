@@ -109,6 +109,7 @@ private fun LinkSaverConteudo(
                             },
                             onTentarDeNovo = { listaViewModel.carregar() },
                             onRemover = { listaViewModel.remover(it) },
+                            onBuscaChange = listaViewModel::aoMudarBusca,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
@@ -119,13 +120,15 @@ private fun LinkSaverConteudo(
                             onUrlChange = adicionarViewModel::aoMudarUrl,
                             onDescricaoChange = adicionarViewModel::aoMudarDescricao,
                             onTextoTagChange = adicionarViewModel::aoMudarTextoTag,
-                            onAdicionarTag = adicionarViewModel::adicionarTag,
+                            onAdicionarTag = { adicionarViewModel.adicionarTag() },
                             onVoltar = {
                                 rotaAtual = "lista"
                                 navController.popBackStack()
                             },
                             onSalvar = adicionarViewModel::salvar,
                             modifier = Modifier.fillMaxSize(),
+                            onRemoverTag = adicionarViewModel::removerTag,
+                            onSelecionarTagExistente = { adicionarViewModel.adicionarTag(it) },
                         )
                     }
                     composable<Detalhe>(deepLinks = listOf(navDeepLink<Detalhe>(basePath = "linksaver://link"))) { backStackEntry ->
@@ -149,13 +152,15 @@ private fun LinkSaverConteudo(
                             adicionarViewModel::aoMudarUrl,
                             adicionarViewModel::aoMudarDescricao,
                             adicionarViewModel::aoMudarTextoTag,
-                            adicionarViewModel::adicionarTag,
+                            { adicionarViewModel.adicionarTag() },
                             {
                                 rotaAtual = "detalhe"
                                 navController.popBackStack()
                             },
                             adicionarViewModel::salvar,
                             Modifier.fillMaxSize(),
+                            onRemoverTag = adicionarViewModel::removerTag,
+                            onSelecionarTagExistente = { adicionarViewModel.adicionarTag(it) },
                         )
                     }
                 }
@@ -198,6 +203,7 @@ private fun PainelLargo(
             },
             onTentarDeNovo = { listaViewModel.carregar() },
             onRemover = { listaViewModel.remover(it) },
+            onBuscaChange = listaViewModel::aoMudarBusca,
             modifier = Modifier.weight(0.4f).fillMaxHeight(),
         )
         Box(modifier = Modifier.weight(0.6f).fillMaxHeight()) {
@@ -208,10 +214,12 @@ private fun PainelLargo(
                     adicionarViewModel::aoMudarUrl,
                     adicionarViewModel::aoMudarDescricao,
                     adicionarViewModel::aoMudarTextoTag,
-                    adicionarViewModel::adicionarTag,
+                    { adicionarViewModel.adicionarTag() },
                     { onNavegar(volta, idSelecionado) },
                     adicionarViewModel::salvar,
                     Modifier.fillMaxSize(),
+                    onRemoverTag = adicionarViewModel::removerTag,
+                    onSelecionarTagExistente = { adicionarViewModel.adicionarTag(it) },
                 )
             } else {
                 val idEf =

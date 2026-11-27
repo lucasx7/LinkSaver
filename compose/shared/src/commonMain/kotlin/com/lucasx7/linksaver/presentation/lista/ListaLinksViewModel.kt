@@ -2,7 +2,9 @@ package com.lucasx7.linksaver.presentation.lista
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lucasx7.linksaver.domain.Link
 import com.lucasx7.linksaver.domain.LinkRepository
+import com.lucasx7.linksaver.domain.filtrarLinks
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +16,8 @@ class ListaLinksViewModel(
 ) : ViewModel() {
     private val _estado = MutableStateFlow<ListaLinksUiState>(ListaLinksUiState.Carregando)
     val estado: StateFlow<ListaLinksUiState> = _estado.asStateFlow()
+    private var todosLinks: List<Link> = emptyList()
+    private var buscaAtual: String = ""
 
     init {
         carregar()
@@ -27,17 +31,35 @@ class ListaLinksViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _estado.value =
-                    ListaLinksUiState.Erro(
-                        e.message ?: "Não foi possível carregar os links.",
-                    )
+                val msg = e.message ?: "Não foi possível carregar os links."
+                _estado.value = ListaLinksUiState.Erro(msg)
             }
         }
     }
 
     private suspend fun buscarEAtualizar() {
-        val links = repository.listar()
-        _estado.value = if (links.isEmpty()) ListaLinksUiState.Vazio else ListaLinksUiState.Sucesso(links)
+        todosLinks = repository.listar()
+        publicarLista()
+    }
+
+    private fun publicarLista() {
+        _estado.value =
+            if (todosLinks.isEmpty()) {
+                ListaLinksUiState.Vazio
+            } else {
+                ListaLinksUiState.Sucesso(
+                    links = filtrarLinks(todosLinks, buscaAtual),
+                    busca = buscaAtual,
+                    totalSemFiltro = todosLinks.size,
+                )
+            }
+    }
+
+    fun aoMudarBusca(novaBusca: String) {
+        buscaAtual = novaBusca
+        if (todosLinks.isNotEmpty() || _estado.value is ListaLinksUiState.Sucesso) {
+            publicarLista()
+        }
     }
 
     fun remover(id: Int) {
@@ -48,7 +70,8 @@ class ListaLinksViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _estado.value = ListaLinksUiState.Erro(e.message ?: "Não foi possível remover o link.")
+                val msg = e.message ?: "Não foi possível remover o link."
+                _estado.value = ListaLinksUiState.Erro(msg)
             }
         }
     }
@@ -65,7 +88,8 @@ class ListaLinksViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _estado.value = ListaLinksUiState.Erro(e.message ?: "Não foi possível salvar o link.")
+                val msg = e.message ?: "Não foi possível salvar o link."
+                _estado.value = ListaLinksUiState.Erro(msg)
             }
         }
     }

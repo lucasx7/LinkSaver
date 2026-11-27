@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,13 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +46,7 @@ fun TelaListaLinks(
     onTentarDeNovo: () -> Unit,
     onRemover: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onBuscaChange: (String) -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -64,46 +70,30 @@ fun TelaListaLinks(
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(top = 16.dp).semantics { heading() },
             )
-            Text(
-                text = "Seus links salvos",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Text("Seus links salvos", color = MaterialTheme.colorScheme.onSurfaceVariant)
             when (estado) {
                 ListaLinksUiState.Carregando ->
-                    Box(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            CircularProgressIndicator(modifier = Modifier.semantics { contentDescription = "Carregando links" })
+                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.semantics { contentDescription = "Carregando links" },
+                            )
                             Text("Carregando links...")
                         }
                     }
                 ListaLinksUiState.Vazio ->
-                    Box(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
+                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text("Nenhum link salvo ainda. Toque em + para adicionar o primeiro.")
                     }
                 is ListaLinksUiState.Erro ->
-                    Box(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text(text = estado.mensagem, color = MaterialTheme.colorScheme.error)
+                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(estado.mensagem, color = MaterialTheme.colorScheme.error)
                             Button(onClick = onTentarDeNovo) { Text("Tentar de novo") }
                         }
                     }
                 is ListaLinksUiState.Sucesso ->
-                    ListaLinksSucesso(
-                        links = estado.links,
-                        onAbrir = onAbrir,
-                        onRemover = onRemover,
-                        modifier = Modifier.weight(1f),
-                    )
+                    ListaLinksSucesso(estado, onBuscaChange, onAbrir, onRemover, Modifier.weight(1f))
             }
         }
     }
@@ -111,39 +101,98 @@ fun TelaListaLinks(
 
 @Composable
 private fun ListaLinksSucesso(
-    links: List<Link>,
+    estado: ListaLinksUiState.Sucesso,
+    onBuscaChange: (String) -> Unit,
     onAbrir: (Int) -> Unit,
     onRemover: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 12.dp),
-    ) {
-        items(items = links, key = { it.id }) { link ->
-            val dominio = dominioDe(link.url)
-            Card(
-                modifier = Modifier.fillMaxWidth().clickable { onAbrir(link.id) },
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(text = dominio, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Text(
-                            text = link.url,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = estado.busca,
+            onValueChange = onBuscaChange,
+            label = { Text("Buscar por URL, descrição ou tag") },
+            singleLine = true,
+            trailingIcon =
+                if (estado.busca.isNotEmpty()) {
+                    {
+                        TextButton(
+                            onClick = { onBuscaChange("") },
+                            modifier = Modifier.semantics { contentDescription = "Limpar busca" },
+                        ) { Text("✕") }
                     }
-                    TextButton(
-                        onClick = { onRemover(link.id) },
-                        modifier = Modifier.semantics { contentDescription = "Remover $dominio" },
-                    ) { Text("Remover") }
+                } else {
+                    null
+                },
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        )
+        if (estado.links.isEmpty()) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("Nenhum link encontrado para \"${estado.busca}\".")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
+            ) {
+                items(items = estado.links, key = { it.id }) { link ->
+                    CardLink(link = link, onAbrir = onAbrir, onRemover = onRemover)
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CardLink(
+    link: Link,
+    onAbrir: (Int) -> Unit,
+    onRemover: (Int) -> Unit,
+) {
+    val dominio = dominioDe(link.url)
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable { onAbrir(link.id) },
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(dominio, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    link.url,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (link.tags.isNotEmpty()) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        link.tags.forEach { tag ->
+                            Surface(
+                                shape = RoundedCornerShape(50),
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                            ) {
+                                Text(
+                                    tag,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            TextButton(
+                onClick = { onRemover(link.id) },
+                modifier = Modifier.semantics { contentDescription = "Remover $dominio" },
+            ) {
+                Text("Remover")
             }
         }
     }

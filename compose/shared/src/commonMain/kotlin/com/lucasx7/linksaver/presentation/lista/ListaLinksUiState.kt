@@ -9,6 +9,8 @@ sealed interface ListaLinksUiState {
 
     data class Sucesso(
         val links: List<Link>,
+        val busca: String = "",
+        val totalSemFiltro: Int = links.size,
     ) : ListaLinksUiState
 
     data class Erro(

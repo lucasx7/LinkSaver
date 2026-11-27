@@ -99,4 +99,23 @@ class ListaLinksViewModelTest : KoinTest {
                 assertIs<ListaLinksUiState.Vazio>(awaitItem())
             }
         }
+
+    @Test
+    fun buscarFiltraPorTextoEMantemSucessoComTotalSemFiltro() {
+        val outro = Link(2, "https://youtu.be/abc", "Video", listOf("youtube"), 2L, null)
+        executarComKoin(FakeLinkRepository(listOf(linkExemplo, outro))) { vm ->
+            vm.estado.test {
+                assertIs<ListaLinksUiState.Carregando>(awaitItem())
+                assertEquals(2, assertIs<ListaLinksUiState.Sucesso>(awaitItem()).links.size)
+                vm.aoMudarBusca("youtube")
+                val filtrado = assertIs<ListaLinksUiState.Sucesso>(awaitItem())
+                assertEquals(listOf(2), filtrado.links.map { it.id })
+                assertEquals(2, filtrado.totalSemFiltro)
+                vm.aoMudarBusca("inexistente")
+                val vazio = assertIs<ListaLinksUiState.Sucesso>(awaitItem())
+                assertEquals(0, vazio.links.size)
+                assertEquals(2, vazio.totalSemFiltro)
+            }
+        }
+    }
 }
