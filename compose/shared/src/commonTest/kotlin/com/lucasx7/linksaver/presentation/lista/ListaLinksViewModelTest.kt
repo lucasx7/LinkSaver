@@ -4,6 +4,8 @@ import app.cash.turbine.test
 import com.lucasx7.linksaver.FakeLinkRepository
 import com.lucasx7.linksaver.domain.Link
 import com.lucasx7.linksaver.domain.LinkRepository
+import com.lucasx7.linksaver.domain.RespostaInvalidaException
+import com.lucasx7.linksaver.domain.SemConexaoException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -26,7 +28,7 @@ class ListaLinksViewModelTest : KoinTest {
     private val linkExemplo = Link(1, "https://kotlinlang.org", "Kotlin", listOf("Dev"), 1_760_000_000_000L, null)
 
     private fun executarComKoin(
-        fakeRepo: FakeLinkRepository,
+        fakeRepo: LinkRepository,
         bloco: suspend TestScope.(ListaLinksViewModel) -> Unit,
     ) = runTest {
         stopKoin()
@@ -115,6 +117,49 @@ class ListaLinksViewModelTest : KoinTest {
                 val vazio = assertIs<ListaLinksUiState.Sucesso>(awaitItem())
                 assertEquals(0, vazio.links.size)
                 assertEquals(2, vazio.totalSemFiltro)
+            }
+        }
+    }
+
+    private fun repoFalhando(erro: Exception): LinkRepository =
+        object : LinkRepository {
+            override suspend fun listar(): List<Link> = throw erro
+
+            override suspend fun buscarPorId(id: Int): Link? = null
+
+            override suspend fun adicionar(
+                url: String,
+                descricao: String,
+                tags: List<String>,
+            ): Link = throw erro
+
+            override suspend fun atualizar(
+                id: Int,
+                url: String,
+                descricao: String,
+                tags: List<String>,
+            ): Link = throw erro
+
+            override suspend fun remover(id: Int) = Unit
+        }
+
+    @Test
+    fun erroDiferenciaSemConexaoERespostaInvalida() {
+        executarComKoin(repoFalhando(SemConexaoException(IllegalStateException("off")))) { vm ->
+            vm.estado.test {
+                assertIs<ListaLinksUiState.Carregando>(awaitItem())
+                val erro = assertIs<ListaLinksUiState.Erro>(awaitItem())
+                assertEquals(
+                    "Sem conexão com o servidor. Verifique se o backend está ligado.",
+                    erro.mensagem,
+                )
+            }
+        }
+        executarComKoin(repoFalhando(RespostaInvalidaException("Erro 500"))) { vm ->
+            vm.estado.test {
+                assertIs<ListaLinksUiState.Carregando>(awaitItem())
+                val erro = assertIs<ListaLinksUiState.Erro>(awaitItem())
+                assertEquals("Erro 500", erro.mensagem)
             }
         }
     }

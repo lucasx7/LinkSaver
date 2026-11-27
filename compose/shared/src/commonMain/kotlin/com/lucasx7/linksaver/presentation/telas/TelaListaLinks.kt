@@ -93,7 +93,14 @@ fun TelaListaLinks(
                         }
                     }
                 is ListaLinksUiState.Sucesso ->
-                    ListaLinksSucesso(estado, onBuscaChange, onAbrir, onRemover, Modifier.weight(1f))
+                    ListaLinksSucesso(
+                        estado,
+                        onBuscaChange,
+                        onAbrir,
+                        onRemover,
+                        onTentarDeNovo,
+                        Modifier.weight(1f),
+                    )
             }
         }
     }
@@ -105,6 +112,7 @@ private fun ListaLinksSucesso(
     onBuscaChange: (String) -> Unit,
     onAbrir: (Int) -> Unit,
     onRemover: (Int) -> Unit,
+    onTentarDeNovo: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -126,6 +134,9 @@ private fun ListaLinksSucesso(
                 },
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         )
+        if (estado.avisoOffline != null) {
+            BannerOffline(estado.avisoOffline, onTentarDeNovo)
+        }
         if (estado.links.isEmpty()) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text("Nenhum link encontrado para \"${estado.busca}\".")
@@ -144,6 +155,31 @@ private fun ListaLinksSucesso(
     }
 }
 
+@Composable
+private fun BannerOffline(
+    mensagem: String,
+    onSincronizar: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = mensagem,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onSincronizar) { Text("Sincronizar") }
+        }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CardLink(
@@ -154,29 +190,16 @@ private fun CardLink(
     val dominio = dominioDe(link.url)
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onAbrir(link.id) },
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(dominio, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text(
-                    link.url,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text(link.url, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (link.tags.isNotEmpty()) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         link.tags.forEach { tag ->
-                            Surface(
-                                shape = RoundedCornerShape(50),
-                                color = MaterialTheme.colorScheme.secondaryContainer,
-                            ) {
+                            Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.secondaryContainer) {
                                 Text(
                                     tag,
                                     style = MaterialTheme.typography.labelSmall,
@@ -191,9 +214,7 @@ private fun CardLink(
             TextButton(
                 onClick = { onRemover(link.id) },
                 modifier = Modifier.semantics { contentDescription = "Remover $dominio" },
-            ) {
-                Text("Remover")
-            }
+            ) { Text("Remover") }
         }
     }
 }

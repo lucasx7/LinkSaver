@@ -64,3 +64,10 @@ O processo evidenciou que assistentes de IA não devem ser seguidos cegamente: m
   `tagDoSite` e `filtrarLinks` no dominio, chips arredondados removiveis (`InputChip`),
   tecla Enter/Done (`ImeAction.Done`), sugestao de tags existentes e busca em tempo real;
   ajuste da regra `ComplexCondition` no `detekt` e expansao para 33 testes no total.
+- **Integracao Ktor Client e modo hibrido (27/11):** `ErrosRede` no dominio,
+  `ConfigBackend` (`expect`/`actual`), `LinkRemotoDto`, `LinkApiClient` (`MockEngine`),
+  `LinkRepositoryHibrido` (cache local + reenvio de pendentes) e `BannerOffline`,
+  chegando a 45 testes. **Corrigido pelo desenvolvedor ao testar ao vivo:** ativado
+  `encodeDefaults = true` no `Json` (apos erro HTTP 500 por `idUsuario = 0` no
+  PostgreSQL), timeout de 5s para o extrator Go, separacao de `ktlintFormat` e
+  `ktlintCheck`, e envio automatico de links pendentes ao reconectar.
