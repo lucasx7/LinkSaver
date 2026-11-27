@@ -9,6 +9,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import com.lucasx7.linksaver.domain.Link
 import com.lucasx7.linksaver.presentation.detalhe.DetalheLinkUiState
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
@@ -48,5 +49,22 @@ class TelaDetalheLinkTest {
             onNodeWithText("Portal acadêmico").assertIsDisplayed()
             onNodeWithText("ufrn").assertIsDisplayed()
             onNodeWithText("estudos").assertIsDisplayed()
+        }
+
+    @Test
+    fun sucesso_exibeAcoesCopiarEAcionaEditar() =
+        runComposeUiTest {
+            var editId = -1
+            val link = Link(1, "https://ufrn.br", "", emptyList(), 1_700_000_000_000L, null)
+            setContent {
+                MaterialTheme {
+                    TelaDetalheLink(DetalheLinkUiState.Sucesso(link), {}) { editId = it }
+                }
+            }
+            onNodeWithText("Abrir link").assertIsDisplayed()
+            onNodeWithText("Copiar URL").performClick()
+            onNodeWithText("✓ Copiado!").assertIsDisplayed()
+            onNodeWithText("Editar").performClick()
+            assertEquals(1, editId)
         }
 }

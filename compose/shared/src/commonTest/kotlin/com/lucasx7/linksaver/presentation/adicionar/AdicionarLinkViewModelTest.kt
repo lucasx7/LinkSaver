@@ -117,4 +117,21 @@ class AdicionarLinkViewModelTest : KoinTest {
             assertEquals("Este link já foi salvo", vm.estado.value.erroUrl)
             assertFalse(vm.estado.value.podeSalvar)
         }
+
+    @Test
+    fun editarLinkMantemUrlSemAcusarDuplicataESalvaAlteracoes() {
+        val repo = FakeLinkRepository(listOf(linkExemplo))
+        executarComKoin(repo) { vm ->
+            advanceUntilIdle()
+            vm.carregarParaEdicao(1)
+            advanceUntilIdle()
+            vm.aoMudarUrl("https://kotlinlang.org")
+            assertNull(vm.estado.value.erroUrl)
+            vm.aoMudarDescricao("Kotlin atualizado")
+            vm.salvar()
+            advanceUntilIdle()
+            assertTrue(vm.estado.value.salvo)
+            assertEquals("Kotlin atualizado", repo.buscarPorId(1)?.descricao)
+        }
+    }
 }

@@ -20,16 +20,24 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.lucasx7.linksaver.domain.dominioDe
 import com.lucasx7.linksaver.domain.formatarData
@@ -41,6 +49,7 @@ fun TelaDetalheLink(
     estado: DetalheLinkUiState,
     onVoltar: () -> Unit,
     modifier: Modifier = Modifier,
+    onEditar: (Int) -> Unit = {},
 ) {
     val linkAtual = (estado as? DetalheLinkUiState.Sucesso)?.link
     Scaffold(
@@ -129,6 +138,8 @@ fun TelaDetalheLink(
                         }
                     }
 
+                    BotoesAcaoDetalhe(link.id, link.url, onEditar)
+
                     // Descrição (se houver)
                     if (link.descricao.isNotBlank()) {
                         Card(
@@ -214,6 +225,33 @@ fun TelaDetalheLink(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun BotoesAcaoDetalhe(
+    id: Int,
+    url: String,
+    onEditar: (Int) -> Unit,
+) {
+    val uriHandler = LocalUriHandler.current
+    val clipboard = LocalClipboardManager.current
+    var copiado by remember(id, url) { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Button(
+            onClick = { runCatching { uriHandler.openUri(url) } },
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text("Abrir link") }
+        Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(
+                onClick = {
+                    clipboard.setText(AnnotatedString(url))
+                    copiado = true
+                },
+                modifier = Modifier.weight(1f),
+            ) { Text(if (copiado) "✓ Copiado!" else "Copiar URL") }
+            OutlinedButton({ onEditar(id) }, Modifier.weight(1f)) { Text("Editar") }
         }
     }
 }
