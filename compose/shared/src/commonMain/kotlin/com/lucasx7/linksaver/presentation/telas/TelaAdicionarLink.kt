@@ -46,7 +46,18 @@ fun TelaAdicionarLink(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         TextButton(onClick = onVoltar) { Text("← Voltar") }
-        Text(text = "Adicionar link", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
+        Text(
+            text =
+                if (estado.idEdicao !=
+                    null
+                ) {
+                    "Editar link"
+                } else {
+                    "Adicionar link"
+                },
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.semantics { heading() },
+        )
         OutlinedTextField(
             value = estado.url,
             onValueChange = onUrlChange,
@@ -80,7 +91,17 @@ fun TelaAdicionarLink(
             TextButton(onClick = onAdicionarTag) { Text("Adicionar") }
         }
         if (estado.tags.isNotEmpty()) Text("Tags adicionadas: ${estado.tags.joinToString(", ")}")
-        Button(onClick = onSalvar, enabled = estado.podeSalvar, modifier = Modifier.fillMaxWidth()) { Text("Salvar link") }
+        Button(onClick = onSalvar, enabled = estado.podeSalvar, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                if (estado.idEdicao !=
+                    null
+                ) {
+                    "Salvar alterações"
+                } else {
+                    "Salvar link"
+                },
+            )
+        }
         Spacer(modifier = Modifier.height(24.dp))
     }
 }

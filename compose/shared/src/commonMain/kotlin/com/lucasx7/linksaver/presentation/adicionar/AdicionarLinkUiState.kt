@@ -1,6 +1,7 @@
 package com.lucasx7.linksaver.presentation.adicionar
 
 data class AdicionarLinkUiState(
+    val idEdicao: Int? = null,
     val url: String = "",
     val descricao: String = "",
     val textoTag: String = "",

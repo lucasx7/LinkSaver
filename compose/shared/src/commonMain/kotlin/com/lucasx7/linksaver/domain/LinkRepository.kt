@@ -11,5 +11,12 @@ interface LinkRepository {
         tags: List<String>,
     ): Link
 
+    suspend fun atualizar(
+        id: Int,
+        url: String,
+        descricao: String,
+        tags: List<String>,
+    ): Link
+
     suspend fun remover(id: Int)
 }
